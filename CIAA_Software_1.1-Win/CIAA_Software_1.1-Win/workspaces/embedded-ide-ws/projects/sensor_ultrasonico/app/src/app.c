@@ -1,7 +1,7 @@
 #include "sapi.h"
 #include "chip.h"
 
-// SENSOR 1 - Configuración según el esquemático original
+// SENSOR 1 - ConfiguraciÃ³n segÃºn el esquemÃ¡tico original
 #define TRIG1_PIN_PORT    4
 #define TRIG1_PIN_NUM     8
 #define TRIG1_GPIO_PORT   5
@@ -12,7 +12,7 @@
 #define ECHO1_GPIO_PORT   2
 #define ECHO1_GPIO_PIN    0
 
-// SENSOR 2 - Configuración según esquemático
+// SENSOR 2 - ConfiguraciÃ³n segÃºn esquemÃ¡tico
 #define TRIG2_PIN_PORT    4
 #define TRIG2_PIN_NUM     6
 #define TRIG2_GPIO_PORT   2
@@ -23,7 +23,7 @@
 #define ECHO2_GPIO_PORT   2
 #define ECHO2_GPIO_PIN    3
 
-// SENSOR 3 - Nueva configuración
+// SENSOR 3 - Nueva configuraciÃ³n
 // TRIG3: LCD2 = P4.5 como GPIO2[5]
 #define TRIG3_PIN_PORT    4
 #define TRIG3_PIN_NUM     5
@@ -76,9 +76,9 @@ void config_pins_custom(void){
 
 void trigger_pulse(uint8_t gpio_port, uint8_t gpio_pin){
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin, false);
-    delayUs(2);
+    delayInaccurateUs(2);
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin, true);
-    delayUs(10);
+    delayInaccurateUs(10);
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin, false);
 }
 
@@ -94,7 +94,7 @@ uint32_t measure_echo(uint8_t gpio_port, uint8_t gpio_pin){
     
     if(timeout >= max_timeout) return 0;
     
-    // Contar mientras ECHO está en alto
+    // Contar mientras ECHO estÃ¡ en alto
     pulse_width = 0;
     while(Chip_GPIO_GetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin) 
           && pulse_width++ < max_timeout);
@@ -125,21 +125,21 @@ int main(void){
     while(TRUE){
         // ===== MEDIR SENSOR 1 =====
         trigger_pulse(TRIG1_GPIO_PORT, TRIG1_GPIO_PIN);
-        delayUs(50);
+        delayInaccurateUs(50);
         uint32_t echo_time1 = measure_echo(ECHO1_GPIO_PORT, ECHO1_GPIO_PIN);
         
         delay(60); // Pausa entre sensores para evitar interferencia
         
         // ===== MEDIR SENSOR 2 =====
         trigger_pulse(TRIG2_GPIO_PORT, TRIG2_GPIO_PIN);
-        delayUs(50);
+        delayInaccurateUs(50);
         uint32_t echo_time2 = measure_echo(ECHO2_GPIO_PORT, ECHO2_GPIO_PIN);
         
         delay(60); // Pausa entre sensores
         
         // ===== MEDIR SENSOR 3 =====
         trigger_pulse(TRIG3_GPIO_PORT, TRIG3_GPIO_PIN);
-        delayUs(50);
+        delayInaccurateUs(50);
         uint32_t echo_time3 = measure_echo(ECHO3_GPIO_PORT, ECHO3_GPIO_PIN);
         
         // Apagar todos los LEDs primero
@@ -167,11 +167,11 @@ int main(void){
             distance3_cm = (echo_time3 * 343) / 20000;
         }
         
-        // Encontrar la MENOR distancia (objeto más cercano) de los 3 sensores
+        // Encontrar la MENOR distancia (objeto mÃ¡s cercano) de los 3 sensores
         uint32_t distance_cm = 0;
         uint8_t valid_readings = 0;
         
-        // Inicializar con la primera lectura válida
+        // Inicializar con la primera lectura vÃ¡lida
         if(distance1_cm > 0) {
             distance_cm = distance1_cm;
             valid_readings++;
@@ -239,7 +239,7 @@ int main(void){
             }
             
         } else {
-            // Sin detección en ningún sensor: LED rojo fijo
+            // Sin detecciÃ³n en ningÃºn sensor: LED rojo fijo
             gpioWrite(LEDR, ON);
             delay(100);
         }
