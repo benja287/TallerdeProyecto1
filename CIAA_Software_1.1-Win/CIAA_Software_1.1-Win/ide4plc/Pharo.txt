@@ -1,0 +1,3 @@
+Pharo 6.0
+
+This distribution was built July 12, 2017.
