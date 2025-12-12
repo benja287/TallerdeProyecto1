@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.tm.terminal.feature"
+      label="%featureName"
+      version="4.5.1.201809261407"
+      provider-name="%providerName"
+      plugin="org.eclipse.tm.terminal.view.core">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <requires>
+      <import feature="org.eclipse.tm.terminal.connector.local.feature"/>
+      <import feature="org.eclipse.tm.terminal.connector.ssh.feature"/>
+      <import feature="org.eclipse.tm.terminal.connector.telnet.feature"/>
+      <import feature="org.eclipse.tm.terminal.control.feature"/>
+      <import feature="org.eclipse.tm.terminal.view.feature"/>
+   </requires>
+
+</feature>

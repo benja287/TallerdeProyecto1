@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: org.eclipse.epp.package.common;singleton:=true
+Built-By: ilg
+Require-Bundle: org.eclipse.platform,org.eclipse.equinox.app,org.eclip
+ se.ui,org.eclipse.core.commands,org.eclipse.core.runtime,org.eclipse.
+ ui.workbench
+Bundle-ManifestVersion: 2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Eclipse-SourceReferences: scm:git:git://git.eclipse.org/gitroot/epp/or
+ g.eclipse.epp.packages.git;path="packages/org.eclipse.epp.package.com
+ mon";commitId=7834a03769440315362f819cbf4b344ea03687e9
+Bundle-Vendor: Eclipse Packaging Project
+Bundle-Name: Common EPP Bundle
+Bundle-Version: 4.9.0.20180917-1800
+Bundle-Localization: plugin
+Created-By: Apache Maven 3.5.0
+Build-Jdk: 1.8.0_131
+Eclipse-BundleShape: dir
+
