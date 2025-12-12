@@ -1,0 +1,60 @@
+{
+    "additionalPaths": [
+        "${APPLICATION_DIR_PATH}",
+        "${APPLICATION_DIR_PATH}/../tools/arm-none-eabi-gcc/bin",
+        "${APPLICATION_DIR_PATH}/../tools/openocd/bin",
+        "${APPLICATION_DIR_PATH}/../tools/system",
+        "${APPLICATION_DIR_PATH}/../tools/zenity",
+        "${APPLICATION_DIR_PATH}/../tools/drivers",
+        "${APPLICATION_DIR_PATH}/../tools/serial-terminal"
+    ],
+    "editor": {
+        "detectIdent": false,
+        "font": {
+            "name": "Ubuntu Mono",
+            "size": 12
+        },
+        "formatterStyle": "linux",
+        "saveOnAction": true,
+        "showSpaces": false,
+        "style": "Default",
+        "tabWidth": 3,
+        "tabsOnSpaces": true
+    },
+    "externalTools": [
+        {
+            "Launch Zadig": "cmd /C start zadigv2.0.1.154.exe"
+        },
+        {
+            "Serial Terminal": "cmd /C start Terminal.exe"
+        }
+    ],
+    "history": [
+        "C:/TallerdeProyecto1/HerramientaDesarrolloEducia/firmware_v3/examples/c/sapi/gpio/led_sequences/src/led_sequences.c",
+        "C:/TallerdeProyecto1/HerramientaDesarrolloEducia/firmware_v3/examples/c/sapi/bluetooth/hm10_uart_bridge/src/hm10_uart_bridge.c",
+        "C:/TallerdeProyecto1/HerramientaDesarrolloEducia/firmware_v3/examples/c/sapi/gpio/blinky/src/blinky.c"
+    ],
+    "lang": "",
+    "logger": {
+        "font": {
+            "name": "Ubuntu Mono",
+            "size": 10
+        }
+    },
+    "network": {
+        "proxy": {
+            "host": "",
+            "pass": "",
+            "port": "",
+            "type": "None",
+            "useCredentials": false,
+            "user": ""
+        }
+    },
+    "templates": {
+        "autoUpdate": true,
+        "url": "https://api.github.com/repos/ciaa/EmbeddedIDE-templates/contents"
+    },
+    "useDarkStyle": false,
+    "useDevelopMode": false
+}
