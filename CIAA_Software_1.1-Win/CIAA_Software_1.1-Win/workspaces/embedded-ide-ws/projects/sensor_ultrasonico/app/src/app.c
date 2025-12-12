@@ -1,247 +1,322 @@
+/**
+ * Sensor Ultrasónico HC-SR04 - Control NO BLOQUEANTE con HARDWARE
+ * 
+ * Implementación usando:
+ * - TIMER1: Genera pulso TRIG automáticamente (hardware)
+ * - Interrupciones GPIO (PININT): Captura flancos ECHO (hardware)
+ * - Timer Capture (TIMER0): Mide ancho de pulso con precisión hardware
+ * 
+ * Pines:
+ * - TRIG3: LCD2 (P4.5) = GPIO2[5]
+ * - ECHO3: T_FIL2 (P4.2) = GPIO2[2]
+ */
+
+#define BOARD edu_ciaa_nxp
 #include "sapi.h"
+#include "sapi_timer.h"
 #include "chip.h"
 
-// SENSOR 1 - Configuración según el esquemático original
-#define TRIG1_PIN_PORT    4
-#define TRIG1_PIN_NUM     8
-#define TRIG1_GPIO_PORT   5
-#define TRIG1_GPIO_PIN    12
+// Pines del sensor
+#define TRIG3_PIN      LCD2    // P4.5 = GPIO2[5]
+#define ECHO3_PIN      T_FIL2  // P4.2 = GPIO2[2]
 
-#define ECHO1_PIN_PORT    4
-#define ECHO1_PIN_NUM     0
-#define ECHO1_GPIO_PORT   2
-#define ECHO1_GPIO_PIN    0
-
-// SENSOR 2 - Configuración según esquemático
-#define TRIG2_PIN_PORT    4
-#define TRIG2_PIN_NUM     6
-#define TRIG2_GPIO_PORT   2
-#define TRIG2_GPIO_PIN    6
-
-#define ECHO2_PIN_PORT    4
-#define ECHO2_PIN_NUM     3
-#define ECHO2_GPIO_PORT   2
-#define ECHO2_GPIO_PIN    3
-
-// SENSOR 3 - Nueva configuración
-// TRIG3: LCD2 = P4.5 como GPIO2[5]
-#define TRIG3_PIN_PORT    4
-#define TRIG3_PIN_NUM     5
-#define TRIG3_GPIO_PORT   2
-#define TRIG3_GPIO_PIN    5
-
-// ECHO3: T_FIL2 = P4.2 como GPIO2[2]
+// Configuración GPIO para interrupciones (LPCOpen)
 #define ECHO3_PIN_PORT    4
-#define ECHO3_PIN_NUM     2
+#define ECHO3_PIN_NUM    2
 #define ECHO3_GPIO_PORT   2
 #define ECHO3_GPIO_PIN    2
+#define ECHO3_IRQ_CHANNEL 0    // Canal de interrupción GPIO (PININT0)
 
-void config_pins_custom(void){
-    // ===== SENSOR 1 =====
-    // Configurar P4.8 como GPIO5[12] - TRIG1
-    Chip_SCU_PinMuxSet(TRIG1_PIN_PORT, TRIG1_PIN_NUM, 
-                       (SCU_MODE_INACT | SCU_MODE_FUNC4));
-    Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, TRIG1_GPIO_PORT, TRIG1_GPIO_PIN);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, TRIG1_GPIO_PORT, TRIG1_GPIO_PIN, false);
-    
-    // Configurar P4.0 como GPIO2[0] - ECHO1
-    Chip_SCU_PinMuxSet(ECHO1_PIN_PORT, ECHO1_PIN_NUM, 
-                       (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC0));
-    Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, ECHO1_GPIO_PORT, ECHO1_GPIO_PIN);
-    
-    // ===== SENSOR 2 =====
-    // Configurar P4.6 (LCD3) como GPIO2[6] - TRIG2
-    Chip_SCU_PinMuxSet(TRIG2_PIN_PORT, TRIG2_PIN_NUM, 
-                       (SCU_MODE_INACT | SCU_MODE_FUNC0));
-    Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, TRIG2_GPIO_PORT, TRIG2_GPIO_PIN);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, TRIG2_GPIO_PORT, TRIG2_GPIO_PIN, false);
-    
-    // Configurar P4.3 (T_FIL3) como GPIO2[3] - ECHO2
-    Chip_SCU_PinMuxSet(ECHO2_PIN_PORT, ECHO2_PIN_NUM, 
-                       (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC0));
-    Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, ECHO2_GPIO_PORT, ECHO2_GPIO_PIN);
-    
-    // ===== SENSOR 3 =====
-    // Configurar P4.5 (LCD2) como GPIO2[5] - TRIG3
-    Chip_SCU_PinMuxSet(TRIG3_PIN_PORT, TRIG3_PIN_NUM, 
-                       (SCU_MODE_INACT | SCU_MODE_FUNC0));
-    Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, TRIG3_GPIO_PORT, TRIG3_GPIO_PIN);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, TRIG3_GPIO_PORT, TRIG3_GPIO_PIN, false);
-    
-    // Configurar P4.2 (T_FIL2) como GPIO2[2] - ECHO3
-    Chip_SCU_PinMuxSet(ECHO3_PIN_PORT, ECHO3_PIN_NUM, 
-                       (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC0));
-    Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, ECHO3_GPIO_PORT, ECHO3_GPIO_PIN);
+// Parámetros del sensor
+#define SENSOR_SAMPLING_RATE_US    60000  // 60ms entre mediciones
+#define SENSOR_TRIGGER_PULSE_WIDTH_US  10  // 10µs pulso TRIG
+
+// Factores de conversión
+#define TICKS_TO_US_FACTOR    (204000000 / 1000000)  // 204 MHz / 1MHz
+#define US_TO_CM_FACTOR       58  // Fórmula: distancia = tiempo_us / 58
+
+// Estados del sensor
+typedef enum {
+    SENSOR_IDLE,
+    SENSOR_WAITING_ECHO,
+    SENSOR_MEASURING,
+    SENSOR_READY
+} sensorState_t;
+
+// Estructura de datos del sensor
+static struct {
+    sensorState_t state;
+    uint32_t echoRiseTime;      // Ticks cuando ECHO sube
+    uint32_t echoFallTime;      // Ticks cuando ECHO baja
+    uint32_t lastEchoWidth;     // Ancho del pulso en ticks
+    float lastDistance;          // Última distancia medida en cm
+    bool_t newMeasurement;      // Flag de nueva medición disponible
+} sensorData = {
+    .state = SENSOR_IDLE,
+    .echoRiseTime = 0,
+    .echoFallTime = 0,
+    .lastEchoWidth = 0,
+    .lastDistance = 0.0,
+    .newMeasurement = FALSE
+};
+
+/**
+ * Callback dummy para TIMER0 (solo para inicializarlo como contador libre)
+ */
+static void timer0DummyCallback(void* ptr)
+{
+    /* No hacer nada - TIMER0 solo se usa para leer el contador */
 }
 
-void trigger_pulse(uint8_t gpio_port, uint8_t gpio_pin){
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin, false);
-    delayInaccurateUs(2);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin, true);
-    delayInaccurateUs(10);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin, false);
+/**
+ * Callback del timer: inicio del período (disparar TRIG)
+ * Se ejecuta cada 60ms automáticamente
+ */
+static void timer1CompareMatch0Callback(void* ptr)
+{
+    // Iniciar pulso TRIG: poner pin en ALTO
+    gpioWrite(TRIG3_PIN, ON);
+    
+    // Cambiar estado
+    sensorData.state = SENSOR_WAITING_ECHO;
+    sensorData.newMeasurement = FALSE;
+    
+    // Configurar compare match 1 para terminar el pulso TRIG (10µs)
+    Timer_SetCompareMatch(TIMER1, TIMERCOMPAREMATCH1, 
+                        Timer_microsecondsToTicks(SENSOR_TRIGGER_PULSE_WIDTH_US));
 }
 
-uint32_t measure_echo(uint8_t gpio_port, uint8_t gpio_pin){
-    uint32_t timeout = 0;
-    uint32_t max_timeout = 500000;
-    uint32_t pulse_width = 0;
-    
-    // Esperar subida del pulso ECHO
-    timeout = 0;
-    while(!Chip_GPIO_GetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin) 
-          && timeout++ < max_timeout);
-    
-    if(timeout >= max_timeout) return 0;
-    
-    // Contar mientras ECHO está en alto
-    pulse_width = 0;
-    while(Chip_GPIO_GetPinState(LPC_GPIO_PORT, gpio_port, gpio_pin) 
-          && pulse_width++ < max_timeout);
-    
-    if(pulse_width >= max_timeout) return 0;
-    
-    return pulse_width / 10;
+/**
+ * Callback del timer: fin del pulso TRIG
+ * Se ejecuta después de 10µs
+ */
+static void timer1CompareMatch1Callback(void* ptr)
+{
+    // Terminar pulso TRIG: poner pin en BAJO
+    gpioWrite(TRIG3_PIN, OFF);
 }
 
-int main(void){
-    boardConfig();
-    
-    // Configurar pines personalizados
-    config_pins_custom();
-    
-    // Test inicial - parpadeo RGB
-    for(int i = 0; i < 3; i++) {
-        gpioWrite(LEDR, ON);
-        gpioWrite(LEDG, ON);
-        gpioWrite(LEDB, ON);
-        delay(200);
-        gpioWrite(LEDR, OFF);
-        gpioWrite(LEDG, OFF);
-        gpioWrite(LEDB, OFF);
-        delay(200);
+/**
+ * Handler de interrupción GPIO para ECHO
+ * Captura los flancos de subida y bajada del pulso ECHO
+ * NOTA: Este handler sobrescribe el de la librería sapi_ultrasonic_hcsr04
+ * El linker usará este handler porque está definido en nuestro código
+ */
+void GPIO0_IRQHandler(void)
+{
+    // Verificar si la interrupción es del canal 0 (nuestro ECHO)
+    // Flanco de SUBIDA: inicio del pulso ECHO
+    if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH(ECHO3_IRQ_CHANNEL)) {
+        sensorData.echoRiseTime = Chip_TIMER_ReadCount(LPC_TIMER0);
+        sensorData.state = SENSOR_MEASURING;
+        
+        // Limpiar flag de flanco de subida
+        Chip_PININT_ClearRiseStates(LPC_GPIO_PIN_INT, PININTCH(ECHO3_IRQ_CHANNEL));
     }
     
-    while(TRUE){
-        // ===== MEDIR SENSOR 1 =====
-        trigger_pulse(TRIG1_GPIO_PORT, TRIG1_GPIO_PIN);
-        delayInaccurateUs(50);
-        uint32_t echo_time1 = measure_echo(ECHO1_GPIO_PORT, ECHO1_GPIO_PIN);
+    // Flanco de BAJADA: fin del pulso ECHO
+    if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH(ECHO3_IRQ_CHANNEL)) {
+        sensorData.echoFallTime = Chip_TIMER_ReadCount(LPC_TIMER0);
         
-        delay(60); // Pausa entre sensores para evitar interferencia
-        
-        // ===== MEDIR SENSOR 2 =====
-        trigger_pulse(TRIG2_GPIO_PORT, TRIG2_GPIO_PIN);
-        delayInaccurateUs(50);
-        uint32_t echo_time2 = measure_echo(ECHO2_GPIO_PORT, ECHO2_GPIO_PIN);
-        
-        delay(60); // Pausa entre sensores
-        
-        // ===== MEDIR SENSOR 3 =====
-        trigger_pulse(TRIG3_GPIO_PORT, TRIG3_GPIO_PIN);
-        delayInaccurateUs(50);
-        uint32_t echo_time3 = measure_echo(ECHO3_GPIO_PORT, ECHO3_GPIO_PIN);
-        
-        // Apagar todos los LEDs primero
-        gpioWrite(LEDR, OFF);
-        gpioWrite(LEDG, OFF);
-        gpioWrite(LEDB, OFF);
-        gpioWrite(LED1, OFF);
-        gpioWrite(LED2, OFF);
-        gpioWrite(LED3, OFF);
-        
-        // Calcular distancias
-        uint32_t distance1_cm = 0;
-        uint32_t distance2_cm = 0;
-        uint32_t distance3_cm = 0;
-        
-        if(echo_time1 > 0) {
-            distance1_cm = (echo_time1 * 343) / 20000;
-        }
-        
-        if(echo_time2 > 0) {
-            distance2_cm = (echo_time2 * 343) / 20000;
-        }
-        
-        if(echo_time3 > 0) {
-            distance3_cm = (echo_time3 * 343) / 20000;
-        }
-        
-        // Encontrar la MENOR distancia (objeto más cercano) de los 3 sensores
-        uint32_t distance_cm = 0;
-        uint8_t valid_readings = 0;
-        
-        // Inicializar con la primera lectura válida
-        if(distance1_cm > 0) {
-            distance_cm = distance1_cm;
-            valid_readings++;
-        }
-        
-        // Comparar con sensor 2
-        if(distance2_cm > 0) {
-            if(valid_readings == 0) {
-                distance_cm = distance2_cm;
-            } else if(distance2_cm < distance_cm) {
-                distance_cm = distance2_cm;
-            }
-            valid_readings++;
-        }
-        
-        // Comparar con sensor 3
-        if(distance3_cm > 0) {
-            if(valid_readings == 0) {
-                distance_cm = distance3_cm;
-            } else if(distance3_cm < distance_cm) {
-                distance_cm = distance3_cm;
-            }
-            valid_readings++;
-        }
-        
-        // Sistema de barras PROGRESIVO
-        if(valid_readings > 0 && distance_cm > 0) {
+        // Calcular ancho del pulso en ticks
+        if (sensorData.echoFallTime > sensorData.echoRiseTime) {
+            sensorData.lastEchoWidth = sensorData.echoFallTime - sensorData.echoRiseTime;
             
-            if(distance_cm < 40) {
-                gpioWrite(LEDB, ON);
-            }
+            // Convertir ticks a microsegundos y luego a centímetros
+            float echoTime_us = (float)(sensorData.lastEchoWidth / TICKS_TO_US_FACTOR);
+            sensorData.lastDistance = echoTime_us / US_TO_CM_FACTOR;
             
-            if(distance_cm < 30) {
-                gpioWrite(LED1, ON);
-            }
+            sensorData.state = SENSOR_READY;
+            sensorData.newMeasurement = TRUE;
+        }
+        
+        // Limpiar flag de flanco de bajada
+        Chip_PININT_ClearFallStates(LPC_GPIO_PIN_INT, PININTCH(ECHO3_IRQ_CHANNEL));
+    }
+    
+    // Limpiar estado de interrupción
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(ECHO3_IRQ_CHANNEL));
+}
+
+/**
+ * Configurar interrupciones GPIO para el pin ECHO
+ */
+static void configEchoInterrupt(void)
+{
+    // Inicializar sistema de interrupciones GPIO (PININT)
+    Chip_PININT_Init(LPC_GPIO_PIN_INT);
+    
+    // Seleccionar pin para interrupción (Port 2, Pin 2 = GPIO2[2] = T_FIL2)
+    Chip_SCU_GPIOIntPinSel(ECHO3_IRQ_CHANNEL, ECHO3_GPIO_PORT, ECHO3_GPIO_PIN);
+    
+    // Limpiar estado de interrupción
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(ECHO3_IRQ_CHANNEL));
+    
+    // Configurar modo de detección por flancos
+    Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(ECHO3_IRQ_CHANNEL));
+    
+    // Habilitar detección de flancos de subida y bajada
+    Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH(ECHO3_IRQ_CHANNEL));
+    Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(ECHO3_IRQ_CHANNEL));
+    
+    // Limpiar interrupciones pendientes
+    NVIC_ClearPendingIRQ(PIN_INT0_IRQn + ECHO3_IRQ_CHANNEL);
+    
+    // Habilitar interrupción en NVIC
+    NVIC_EnableIRQ(PIN_INT0_IRQn + ECHO3_IRQ_CHANNEL);
+}
+
+/**
+ * Inicializar sensor ultrasónico
+ */
+static void sensorInit(void)
+{
+    // Configurar pin TRIG como salida
+    gpioConfig(TRIG3_PIN, GPIO_OUTPUT);
+    gpioWrite(TRIG3_PIN, OFF);
+    
+    // Configurar pin ECHO como entrada
+    gpioConfig(ECHO3_PIN, GPIO_INPUT);
+    
+    // Configurar interrupciones GPIO para ECHO
+    configEchoInterrupt();
+    
+    // Inicializar TIMER0 como contador libre para Timer Capture
+    // Se usa solo para leer el contador, no para generar interrupciones
+    // Período muy largo (1 segundo) para que funcione como contador libre
+    Timer_Init(TIMER0, 
+               Timer_microsecondsToTicks(1000000),  // 1 segundo (solo para inicializar)
+               timer0DummyCallback);
+    
+    // Inicializar TIMER1 para generar pulso TRIG automáticamente
+    // Período: 60ms (frecuencia de muestreo)
+    Timer_Init(TIMER1, 
+               Timer_microsecondsToTicks(SENSOR_SAMPLING_RATE_US),
+               timer1CompareMatch0Callback);
+    
+    // Habilitar compare match 1 para controlar ancho del pulso TRIG (10µs)
+    Timer_EnableCompareMatch(TIMER1, 
+                            TIMERCOMPAREMATCH1,
+                            Timer_microsecondsToTicks(SENSOR_TRIGGER_PULSE_WIDTH_US),
+                            timer1CompareMatch1Callback);
+    
+    printf("Sensor inicializado:\r\n");
+    printf("  TRIG: LCD2 (P4.5)\r\n");
+    printf("  ECHO: T_FIL2 (P4.2)\r\n");
+    printf("  Frecuencia muestreo: 60ms\r\n");
+    printf("  Pulso TRIG: 10µs\r\n");
+    printf("  Timer: TIMER1 (TRIG), TIMER0 (Capture)\r\n\r\n");
+}
+
+/**
+ * Obtener última distancia medida (no bloqueante)
+ * @return Distancia en cm, o 0.0 si no hay medición válida
+ */
+float sensorGetDistance(void)
+{
+    if (sensorData.newMeasurement && sensorData.lastDistance > 0.0) {
+        return sensorData.lastDistance;
+    }
+    return 0.0;
+}
+
+/**
+ * Verificar si hay nueva medición disponible
+ */
+bool_t sensorHasNewMeasurement(void)
+{
+    return sensorData.newMeasurement;
+}
+
+int main(void)
+{
+    boardConfig();
+    uartConfig(UART_USB, 115200);
+    tickConfig(1);  // Tick cada 1ms para control no bloqueante
+    
+    // Configurar LEDs
+    gpioConfig(LEDR, GPIO_OUTPUT);
+    gpioConfig(LEDG, GPIO_OUTPUT);
+    gpioConfig(LEDB, GPIO_OUTPUT);
+    gpioConfig(LED1, GPIO_OUTPUT);
+    gpioConfig(LED2, GPIO_OUTPUT);
+    gpioConfig(LED3, GPIO_OUTPUT);
+    
+    delay(1000);
+    
+    printf("\r\n========================================\r\n");
+    printf("  SENSOR ULTRASONICO HC-SR04\r\n");
+    printf("  Control NO BLOQUEANTE con HARDWARE\r\n");
+    printf("========================================\r\n\r\n");
+    
+    // Inicializar sensor (configura hardware automáticamente)
+    sensorInit();
+    
+    printf("Iniciando mediciones automáticas...\r\n\r\n");
+    
+    // Control no bloqueante para leer y mostrar mediciones
+    tick_t tiempoAnterior = tickRead();
+    uint32_t medicion_num = 0;
+    
+    while(TRUE) {
+        tick_t tiempoActual = tickRead();
+        
+        // Verificar nueva medición cada 100ms (más rápido que la frecuencia de muestreo)
+        if (tiempoActual - tiempoAnterior >= 100) {
+            tiempoAnterior = tiempoActual;
             
-            if(distance_cm < 20) {
-                gpioWrite(LEDB, OFF);
-                gpioWrite(LEDG, ON);
-                gpioWrite(LED2, ON);
-            }
+            // Leer distancia (no bloqueante)
+            float distancia = sensorGetDistance();
             
-            if(distance_cm < 10) {
-                gpioWrite(LEDG, OFF);
-                gpioWrite(LEDR, ON);
-                gpioWrite(LEDG, ON);
-                gpioWrite(LED3, ON);
-            }
-            
-            if(distance_cm < 5) {
-                // Alerta roja parpadeante
-                gpioWrite(LEDG, OFF);
-                gpioWrite(LEDR, ON);
-                gpioWrite(LED1, ON);
-                gpioWrite(LED2, ON);
-                gpioWrite(LED3, ON);
-                delay(50);
+            if (sensorHasNewMeasurement() && distancia > 0.0) {
+                medicion_num++;
+                
+                // Apagar todos los LEDs primero
                 gpioWrite(LEDR, OFF);
+                gpioWrite(LEDG, OFF);
+                gpioWrite(LEDB, OFF);
                 gpioWrite(LED1, OFF);
                 gpioWrite(LED2, OFF);
                 gpioWrite(LED3, OFF);
-                delay(50);
-            } else {
-                delay(100);
+                
+                printf("[%lu] Distancia: %.1f cm\r\n", medicion_num, distancia);
+                
+                // Indicación visual con LEDs según distancia
+                if (distancia < 50.0) {
+                    gpioWrite(LEDB, ON);  // Azul: detectado
+                    
+                    if (distancia < 30.0) {
+                        gpioWrite(LED1, ON);
+                    }
+                    
+                    if (distancia < 20.0) {
+                        gpioWrite(LEDB, OFF);
+                        gpioWrite(LEDG, ON);  // Verde: cerca
+                        gpioWrite(LED2, ON);
+                    }
+                    
+                    if (distancia < 10.0) {
+                        gpioWrite(LEDG, OFF);
+                        gpioWrite(LEDR, ON);  // Rojo: muy cerca
+                        gpioWrite(LED3, ON);
+                    }
+                    
+                    if (distancia < 5.0) {
+                        printf("*** ALERTA: Objeto muy cercano! ***\r\n");
+                    }
+                }
+                
+                // Marcar medición como leída
+                sensorData.newMeasurement = FALSE;
             }
-            
-        } else {
-            // Sin detección en ningún sensor: LED rojo fijo
-            gpioWrite(LEDR, ON);
-            delay(100);
         }
+        
+        // Aquí puedes hacer otras tareas sin bloquear
+        // El sensor funciona completamente en hardware:
+        // - TIMER1 genera TRIG automáticamente
+        // - Interrupciones GPIO capturan ECHO
+        // - TIMER0 mide el ancho del pulso
     }
+    
+    return 0;
 }

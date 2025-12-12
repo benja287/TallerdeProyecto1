@@ -52,8 +52,8 @@ LDFLAGS=$(ARCH_FLAGS)
 LDFLAGS+=$(foreach m, $(MODULES), -L$(m)/lib)
 LDFLAGS+=-Tlink.ld
 LDFLAGS+=-nostartfiles -Wl,-gc-sections -Wl,-Map=$(TARGET_MAP) -Wl,--cref
+LDFLAGS+=-Wl,--allow-multiple-definition  # Permitir múltiples definiciones (usa la última)ifeq ($(USE_NANO),y)
 
-ifeq ($(USE_NANO),y)
 LDFLAGS+=--specs=nano.specs
 endif
 

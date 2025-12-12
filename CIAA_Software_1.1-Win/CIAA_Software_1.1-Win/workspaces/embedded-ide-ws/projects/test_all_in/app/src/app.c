@@ -71,34 +71,85 @@ volatile uint32_t dist3_cm = 0;
 // FUNCIONES AUXILIARES
 // ==============================================================================
 
+#include "sapi_cyclesCounter.h"
+
+// ... existing includes ...
+
+// ==============================================================================
+// FUNCIONES AUXILIARES
+// ==============================================================================
+
+// ==============================================================================
+// FUNCIONES AUXILIARES
+// ==============================================================================
+
+// Manejadores de Tareas para notificaciones
+static TaskHandle_t xSensorTaskHandle = NULL;
+
+// Variables volatiles para ISR
+volatile uint32_t start_cycles_s1 = 0;
+volatile uint32_t start_cycles_s2 = 0;
+volatile uint32_t start_cycles_s3 = 0;
+
 // Configuración de bajo nivel para sensores
 void config_sensor_pins(void) {
-    // S1
+    // Inicializar contador de ciclos para medicion precisa
+    cyclesCounterConfig(EDU_CIAA_NXP_CLOCK_SPEED);
+
+    // --- S1 Config (Echo: P4_0 -> GPIO2[0]) ---
     Chip_SCU_PinMuxSet(TRIG1_PORT, TRIG1_PIN, (SCU_MODE_INACT | SCU_MODE_FUNC4));
     Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, TRIG1_GPIO_P, TRIG1_GPIO_B);
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, TRIG1_GPIO_P, TRIG1_GPIO_B, false);
 
+    // Echo 1: P4_0 -> Pin Int 0
     Chip_SCU_PinMuxSet(ECHO1_PORT, ECHO1_PIN, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC0));
     Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, ECHO1_GPIO_P, ECHO1_GPIO_B);
+    
+    Chip_SCU_GPIOIntPinSel(0, ECHO1_GPIO_P, ECHO1_GPIO_B); // Channel 0
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0));
+    Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(0)); // Edge sensitive
+    Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH(0));  // Rising
+    Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(0));   // Falling
+    NVIC_ClearPendingIRQ(PIN_INT0_IRQn);
+    NVIC_EnableIRQ(PIN_INT0_IRQn);
 
-    // S2
+
+    // --- S2 Config (Echo: P4_3 -> GPIO2[3]) ---
     Chip_SCU_PinMuxSet(TRIG2_PORT, TRIG2_PIN, (SCU_MODE_INACT | SCU_MODE_FUNC0));
     Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, TRIG2_GPIO_P, TRIG2_GPIO_B);
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, TRIG2_GPIO_P, TRIG2_GPIO_B, false);
 
+    // Echo 2: P4_3 -> Pin Int 1
     Chip_SCU_PinMuxSet(ECHO2_PORT, ECHO2_PIN, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC0));
     Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, ECHO2_GPIO_P, ECHO2_GPIO_B);
+    
+    Chip_SCU_GPIOIntPinSel(1, ECHO2_GPIO_P, ECHO2_GPIO_B); // Channel 1
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1));
+    Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(1));
+    Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH(1));
+    Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(1));
+    NVIC_ClearPendingIRQ(PIN_INT1_IRQn);
+    NVIC_EnableIRQ(PIN_INT1_IRQn);
 
-    // S3
+    // --- S3 Config (Echo: P4_2 -> GPIO2[2]) ---
     Chip_SCU_PinMuxSet(TRIG3_PORT, TRIG3_PIN, (SCU_MODE_INACT | SCU_MODE_FUNC0));
     Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, TRIG3_GPIO_P, TRIG3_GPIO_B);
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, TRIG3_GPIO_P, TRIG3_GPIO_B, false);
 
+    // Echo 3: P4_2 -> Pin Int 2
     Chip_SCU_PinMuxSet(ECHO3_PORT, ECHO3_PIN, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC0));
     Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, ECHO3_GPIO_P, ECHO3_GPIO_B);
+
+    Chip_SCU_GPIOIntPinSel(2, ECHO3_GPIO_P, ECHO3_GPIO_B); // Channel 2
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
+    Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(2));
+    Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH(2));
+    Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(2));
+    NVIC_ClearPendingIRQ(PIN_INT2_IRQn);
+    NVIC_EnableIRQ(PIN_INT2_IRQn);
 }
 
-// Disparo del pulso
+// ... trigger_sensor ... (sin cambios)
 void trigger_sensor(uint8_t port, uint8_t pin) {
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, port, pin, false);
     delayInaccurateUs(2);
@@ -107,30 +158,55 @@ void trigger_sensor(uint8_t port, uint8_t pin) {
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, port, pin, false);
 }
 
-// Medición de eco (bloqueante por corto tiempo - max 50ms)
-// Nota: En FreeRTOS idealmente usariamos interrupciones, pero por simplicidad
-// y dado el codigo base, usaremos este metodo con timeout.
-uint32_t get_distance(uint8_t echo_port, uint8_t echo_pin) {
-    uint32_t timeout = 500000;
-    uint32_t count = 0;
-
-    // Esperar 1
-    while(!Chip_GPIO_GetPinState(LPC_GPIO_PORT, echo_port, echo_pin) && timeout > 0) timeout--;
-    if(timeout == 0) return 0;
-
-    // Contar
-    timeout = 500000;
-    while(Chip_GPIO_GetPinState(LPC_GPIO_PORT, echo_port, echo_pin) && timeout > 0) {
-        timeout--;
-        count++;
+// ISRs para captura de ECOS
+void GPIO0_IRQHandler(void) {
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0));
+    // Check Value para saber si es Rise o Fall
+    if (Chip_GPIO_GetPinState(LPC_GPIO_PORT, ECHO1_GPIO_P, ECHO1_GPIO_B)) {
+        // Rise
+        start_cycles_s1 = cyclesCounterRead();
+    } else {
+        // Fall
+        uint32_t end = cyclesCounterRead();
+        uint32_t diff = end - start_cycles_s1;
+        float us = cyclesCounterToUs(diff);
+        dist1_cm = (uint32_t)(us / 58.0);
+        
+        // Notificar tarea
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        vTaskNotifyGiveFromISR(xSensorTaskHandle, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
-    
-    // Calibración aproximada basada en el código original (count / 10 * factor??)
-    // El codigo original hacia: pulse_width / 10 luego * 343 / 20000
-    // Simplificado: count es proporcional al tiempo.
-    // Usaremos la fórmula del ejemplo original tal cual
-    uint32_t raw_time = count / 10;
-    return (raw_time * 343) / 20000;
+}
+
+void GPIO1_IRQHandler(void) {
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1));
+    if (Chip_GPIO_GetPinState(LPC_GPIO_PORT, ECHO2_GPIO_P, ECHO2_GPIO_B)) {
+        start_cycles_s2 = cyclesCounterRead();
+    } else {
+        uint32_t end = cyclesCounterRead();
+        uint32_t diff = end - start_cycles_s2;
+        float us = cyclesCounterToUs(diff);
+        dist2_cm = (uint32_t)(us / 58.0);
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        vTaskNotifyGiveFromISR(xSensorTaskHandle, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+}
+
+void GPIO2_IRQHandler(void) {
+    Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
+    if (Chip_GPIO_GetPinState(LPC_GPIO_PORT, ECHO3_GPIO_P, ECHO3_GPIO_B)) {
+        start_cycles_s3 = cyclesCounterRead();
+    } else {
+        uint32_t end = cyclesCounterRead();
+        uint32_t diff = end - start_cycles_s3;
+        float us = cyclesCounterToUs(diff);
+        dist3_cm = (uint32_t)(us / 58.0);
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        vTaskNotifyGiveFromISR(xSensorTaskHandle, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
 }
 
 // Header de Timer para PWM por Software/Interrupcion
@@ -144,11 +220,16 @@ uint32_t get_distance(uint8_t echo_port, uint8_t echo_pin) {
 
 // ... existing config_sensor_pins ...
 // ... existing trigger_sensor ...
-// ... existing get_distance ...
+// REMOVIDO: get_distance (reemplazado por ISR)
 
 // --- CONTROL SERVO (TIMER0) ---
-// Logica copiada de servos3003
+// ... (Codigo servomotor sin cambios) ...
 
+// ==============================================================================
+// TAREAS FREERTOS
+// ==============================================================================
+
+// --- CONTROL SERVO (TIMER0) ---
 #define SERVO_PERIODO_US       20000  // 20ms = 50 Hz
 #define SERVO_PULSO_MIN_US     500    // 0.5ms = 0 grados
 #define SERVO_PULSO_MAX_US     2000   // 2.0ms = 180 grados
@@ -181,10 +262,6 @@ void set_servo_angle(uint8_t angle) {
     // El cambio tomara efecto en el siguiente ciclo de interrupcion (max 20ms)
 }
 
-// ==============================================================================
-// TAREAS FREERTOS
-// ==============================================================================
-
 void TaskBlink(void* taskParm) {
     while(1) {
         gpioToggle(LEDB);
@@ -194,31 +271,39 @@ void TaskBlink(void* taskParm) {
 
 void TaskSensors(void* taskParm) {
     config_sensor_pins();
+    
+    // Guardar handle para notificaciones
+    xSensorTaskHandle = xTaskGetCurrentTaskHandle();
 
     while(1) {
         // Sensor 1
-        portENTER_CRITICAL(); // Breve sección crítica para timing preciso del trigger
+        portENTER_CRITICAL();
         trigger_sensor(TRIG1_GPIO_P, TRIG1_GPIO_B);
         portEXIT_CRITICAL();
-        dist1_cm = get_distance(ECHO1_GPIO_P, ECHO1_GPIO_B);
-        vTaskDelay(50 / portTICK_RATE_MS);
+        // Esperar max 35ms (eco maximo seguro + margen)
+        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
+        
+        vTaskDelay(15 / portTICK_RATE_MS); // Pequeño delay entre sensores
 
         // Sensor 2
         portENTER_CRITICAL();
         trigger_sensor(TRIG2_GPIO_P, TRIG2_GPIO_B);
         portEXIT_CRITICAL();
-        dist2_cm = get_distance(ECHO2_GPIO_P, ECHO2_GPIO_B);
-        vTaskDelay(50 / portTICK_RATE_MS);
+        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
+        
+        vTaskDelay(15 / portTICK_RATE_MS);
 
         // Sensor 3
         portENTER_CRITICAL();
         trigger_sensor(TRIG3_GPIO_P, TRIG3_GPIO_B);
         portEXIT_CRITICAL();
-        dist3_cm = get_distance(ECHO3_GPIO_P, ECHO3_GPIO_B);
-        vTaskDelay(50 / portTICK_RATE_MS);
+        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
 
-        // Loguear (Opcional, puede saturar UART)
-        // printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        // Loguear
+        printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        
+        // Retardo para la siguiente vuelta
+        vTaskDelay(200 / portTICK_RATE_MS);
     }
 }
 
