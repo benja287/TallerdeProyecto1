@@ -1,229 +1,128 @@
 /**
- * Servo S3003 en T_COL2 con PWM por HARDWARE
- * SIN DELAYS BLOQUEANTES - Usa millis() para control fluido
+ * Servo S3003 en T_COL2 con TIMER HARDWARE
+ * Control por hardware usando TIMER0 - NO BLOQUEANTE
  */
 
-// IMPORTANTE: Definir ANTES de incluir sapi.h
 #define BOARD edu_ciaa_nxp
-#define PWM_TOTALS 10
-
 #include "sapi.h"
-
+#include "sapi_timer.h"
 #define SERVO_PIN T_COL2
-#define SERVO_FREQ 50  // 50 Hz para servo
 
-// Variables para control no bloqueante
-typedef enum {
-    ESTADO_0_GRADOS,
-    ESTADO_45_GRADOS,
-    ESTADO_90_GRADOS,
-    ESTADO_135_GRADOS,
-    ESTADO_180_GRADOS,
-    ESTADO_BARRIDO_IDA,
-    ESTADO_BARRIDO_VUELTA,
-    ESTADO_PAUSA
-} EstadoServo_t;
+// Parámetros del servo (estándar para servos tipo S3003)
+#define SERVO_PERIODO_US       20000  // 20ms = 50 Hz
+#define SERVO_PULSO_MIN_US     500    // 0.5ms = 0 grados
+#define SERVO_PULSO_MAX_US     2000   // 2.0ms = 180 grados
 
-EstadoServo_t estadoActual = ESTADO_0_GRADOS;
-tick_t tiempoAnterior = 0;
-uint8_t anguloBarrido = 0;
+// Variable global para el ángulo actual del servo
+static uint8_t servoAngle = 90;  // Ángulo inicial: 90 grados (centro)
 
 /**
- * Configurar �ngulo del servo (0-180 grados)
+ * Convierte ángulo (0-180) a ancho de pulso en microsegundos
+ */
+static uint32_t angleToPulseWidth(uint8_t angle)
+{
+    if (angle > 180) angle = 180;
+    return SERVO_PULSO_MIN_US + ((angle * (SERVO_PULSO_MAX_US - SERVO_PULSO_MIN_US)) / 180);
+}
+
+/**
+ * Callback del timer: inicio del período (pulso en ALTO)
+ * Se ejecuta cada 20ms (50 Hz)
+ */
+static void timer0CompareMatch0Callback(void* ptr)
+{
+    // Iniciar pulso: poner pin en ALTO
+    gpioWrite(SERVO_PIN, ON);
+    
+    // Configurar compare match 1 para terminar el pulso
+    uint32_t pulseWidth = angleToPulseWidth(servoAngle);
+    Timer_SetCompareMatch(TIMER0, TIMERCOMPAREMATCH1, 
+                         Timer_microsecondsToTicks(pulseWidth));
+}
+
+/**
+ * Callback del timer: fin del pulso (pulso en BAJO)
+ * Se ejecuta después del ancho de pulso calculado
+ */
+static void timer0CompareMatch1Callback(void* ptr)
+{
+    // Terminar pulso: poner pin en BAJO
+    gpioWrite(SERVO_PIN, OFF);
+}
+
+/**
+ * Configurar el ángulo del servo (0-180 grados)
+ * Esta función puede llamarse desde cualquier parte del código
  */
 void servoSetAngle(uint8_t angle)
 {
     if (angle > 180) angle = 180;
-    
-    // Calcular duty cycle: 5% (0�) a 10% (180�)
-    float dutyPercent = 5.0 + ((float)angle * 5.0 / 180.0);
-    uint8_t dutyCycle = (uint8_t)((dutyPercent * 255.0) / 100.0);
-    
-    pwmWrite(SERVO_PIN, dutyCycle);
-}
-
-/**
- * M�quina de estados no bloqueante para control del servo
- */
-void actualizarServo(void)
-{
-    tick_t tiempoActual = tickRead();
-    
-    switch(estadoActual) {
-        
-        case ESTADO_0_GRADOS:
-            if (tiempoActual - tiempoAnterior >= 2000) {
-                printf("-> 0 grados\r\n");
-                servoSetAngle(0);
-                tiempoAnterior = tiempoActual;
-                estadoActual = ESTADO_45_GRADOS;
-            }
-            break;
-            
-        case ESTADO_45_GRADOS:
-            if (tiempoActual - tiempoAnterior >= 2000) {
-                printf("-> 45 grados\r\n");
-                servoSetAngle(45);
-                tiempoAnterior = tiempoActual;
-                estadoActual = ESTADO_90_GRADOS;
-            }
-            break;
-            
-        case ESTADO_90_GRADOS:
-            if (tiempoActual - tiempoAnterior >= 2000) {
-                printf("-> 90 grados\r\n");
-                servoSetAngle(90);
-                tiempoAnterior = tiempoActual;
-                estadoActual = ESTADO_135_GRADOS;
-            }
-            break;
-            
-        case ESTADO_135_GRADOS:
-            if (tiempoActual - tiempoAnterior >= 2000) {
-                printf("-> 135 grados\r\n");
-                servoSetAngle(135);
-                tiempoAnterior = tiempoActual;
-                estadoActual = ESTADO_180_GRADOS;
-            }
-            break;
-            
-        case ESTADO_180_GRADOS:
-            if (tiempoActual - tiempoAnterior >= 2000) {
-                printf("-> 180 grados\r\n");
-                servoSetAngle(180);
-                tiempoAnterior = tiempoActual;
-                anguloBarrido = 0;
-                estadoActual = ESTADO_BARRIDO_IDA;
-                printf("Barrido 0->180...\r\n");
-            }
-            break;
-            
-        case ESTADO_BARRIDO_IDA:
-            if (tiempoActual - tiempoAnterior >= 50) {
-                servoSetAngle(anguloBarrido);
-                anguloBarrido += 5;
-                tiempoAnterior = tiempoActual;
-                
-                if (anguloBarrido > 180) {
-                    anguloBarrido = 180;
-                    estadoActual = ESTADO_BARRIDO_VUELTA;
-                    printf("Barrido 180->0...\r\n");
-                }
-            }
-            break;
-            
-        case ESTADO_BARRIDO_VUELTA:
-            if (tiempoActual - tiempoAnterior >= 50) {
-                servoSetAngle(anguloBarrido);
-                
-                if (anguloBarrido <= 5) {
-                    anguloBarrido = 0;
-                    estadoActual = ESTADO_PAUSA;
-                    tiempoAnterior = tiempoActual;
-                    printf("Ciclo completado\r\n\r\n");
-                } else {
-                    anguloBarrido -= 5;
-                }
-                
-                tiempoAnterior = tiempoActual;
-            }
-            break;
-            
-        case ESTADO_PAUSA:
-            if (tiempoActual - tiempoAnterior >= 1000) {
-                tiempoAnterior = tiempoActual;
-                estadoActual = ESTADO_0_GRADOS;
-            }
-            break;
-    }
+    servoAngle = angle;
+    // El timer hardware se encargará automáticamente de actualizar el pulso
 }
 
 int main(void)
 {
     boardConfig();
     uartConfig(UART_USB, 115200);
-    tickConfig(1);  // Tick cada 1ms
+    tickConfig(1);  // Tick cada 1ms para control no bloqueante
     
     gpioConfig(LEDR, GPIO_OUTPUT);
     gpioConfig(LEDG, GPIO_OUTPUT);
+    gpioConfig(SERVO_PIN, GPIO_OUTPUT);
     
-    delay(2000);
+    delay(1000);
     
     printf("\r\n========================================\r\n");
-    printf("  Servo S3003 - CONTROL NO BLOQUEANTE\r\n");
+    printf("  Servo S3003 - TIMER HARDWARE\r\n");
     printf("========================================\r\n");
-    printf("BOARD: edu_ciaa_nxp\r\n");
-    printf("PWM_TOTALS: %d\r\n", PWM_TOTALS);
     printf("Pin: T_COL2\r\n");
-    printf("Frecuencia: 50 Hz\r\n");
+    printf("Timer: TIMER0 (Hardware)\r\n");
+    printf("Frecuencia: 50 Hz (20ms periodo)\r\n");
+    printf("Pulso: 500-2000 us (0-180 grados)\r\n");
     printf("========================================\r\n\r\n");
     
-    // Intentar inicializar PWM por hardware
-    printf("Inicializando PWM en T_COL2...\r\n");
+    // Inicializar TIMER0 para generar pulsos de servo
+    // Período: 20ms (50 Hz)
+    Timer_Init(TIMER0, 
+               Timer_microsecondsToTicks(SERVO_PERIODO_US),
+               timer0CompareMatch0Callback);
     
-    if (pwmConfig(SERVO_PIN, SERVO_FREQ)) {
-        printf("? PWM inicializado correctamente\r\n");
-        gpioWrite(LEDG, ON);
+    // Habilitar compare match 1 para controlar el ancho del pulso
+    Timer_EnableCompareMatch(TIMER0, 
+                            TIMERCOMPAREMATCH1,
+                            Timer_microsecondsToTicks(angleToPulseWidth(servoAngle)),
+                            timer0CompareMatch1Callback);
+    
+    printf("Timer hardware inicializado correctamente\r\n");
+    gpioWrite(LEDG, ON);
+    
+    printf("\r\nIniciando test del servo...\r\n");
+    printf("Movimiento: 0° -> 180° -> 0°\r\n\r\n");
+    
+    // Control no bloqueante para cambiar posiciones
+    tick_t tiempoAnterior = tickRead();
+    uint8_t estado = 0;  // 0: 0 grados, 1: 180 grados
+    
+    while(TRUE) {
+        tick_t tiempoActual = tickRead();
         
-        printf("\r\nIniciando control del servo...\r\n\r\n");
-        
-        // Posici�n inicial
-        servoSetAngle(90);
-        tiempoAnterior = tickRead();
-        
-        while(TRUE) {
-            actualizarServo();
-            // Aqu� puedes hacer otras tareas sin trabar el servo
+        // Cambiar posición cada 2 segundos
+        if (tiempoActual - tiempoAnterior >= 2000) {
+            if (estado == 0) {
+                servoSetAngle(0);
+                printf("-> 0 grados\r\n");
+                estado = 1;
+            } else {
+                servoSetAngle(180);
+                printf("-> 180 grados\r\n");
+                estado = 0;
+            }
+            tiempoAnterior = tiempoActual;
         }
         
-    } else {
-        // Si T_COL2 no soporta PWM hardware, usar software
-        printf("? T_COL2 no soporta PWM por hardware\r\n");
-        printf("Cambiando a PWM por SOFTWARE...\r\n\r\n");
-        gpioWrite(LEDR, ON);
-        
-        // Configurar como GPIO
-        gpioConfig(SERVO_PIN, GPIO_OUTPUT);
-        
-        printf("Servo funcionando con PWM software en T_COL2\r\n");
-        printf("NOTA: PWM software puede tener jitter\r\n\r\n");
-        
-        // Variables para PWM software no bloqueante
-        uint16_t pulseWidth = 1500;
-        tick_t tiempoPulso = 0;
-        bool_t pulsoActivo = FALSE;
-        
-        tiempoAnterior = tickRead();
-        
-        while(TRUE) {
-            tick_t ahora = tickRead();
-            
-            // Generar pulsos PWM
-            if (!pulsoActivo && (ahora - tiempoPulso >= 20)) {
-                gpioWrite(SERVO_PIN, ON);
-                pulsoActivo = TRUE;
-                tiempoPulso = ahora;
-            }
-            
-            if (pulsoActivo && (ahora - tiempoPulso >= (pulseWidth/1000))) {
-                gpioWrite(SERVO_PIN, OFF);
-                pulsoActivo = FALSE;
-            }
-            
-            // Cambiar posiciones cada 2 segundos
-            if (ahora - tiempoAnterior >= 2000) {
-                static uint8_t posicion = 0;
-                
-                switch(posicion) {
-                    case 0: pulseWidth = 1000; printf("-> 0�\r\n"); break;
-                    case 1: pulseWidth = 1500; printf("-> 90�\r\n"); break;
-                    case 2: pulseWidth = 2000; printf("-> 180�\r\n"); break;
-                }
-                
-                posicion = (posicion + 1) % 3;
-                tiempoAnterior = ahora;
-            }
-        }
+        // Aquí puedes hacer otras tareas sin bloquear el servo
+        // El timer hardware se encarga de generar los pulsos automáticamente
     }
     
     return 0;
