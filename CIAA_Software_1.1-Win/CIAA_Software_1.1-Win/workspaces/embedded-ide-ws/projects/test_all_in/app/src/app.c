@@ -317,7 +317,7 @@ void TaskSensors(void* taskParm) {
         ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
 
         // Loguear
-        // printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
         
         // Retardo para la siguiente vuelta
         vTaskDelay(200 / portTICK_RATE_MS);
@@ -586,7 +586,7 @@ int main(void) {
     
     // Crear tareas
     xTaskCreate(TaskBlink,   "Blink",   128, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(TaskSensors, "Sensors", 256, NULL, tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(TaskSensors, "Sensors", 512, NULL, tskIDLE_PRIORITY + 2, NULL);
     xTaskCreate(TaskUARTDecode, "Decoder", 512, NULL, tskIDLE_PRIORITY + 3, NULL); // Prioridad alta para vaciar buffer
     xTaskCreate(TaskMotors,  "Motors",  256, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(TaskServo,   "Servo",   256, NULL, tskIDLE_PRIORITY + 1, NULL);
