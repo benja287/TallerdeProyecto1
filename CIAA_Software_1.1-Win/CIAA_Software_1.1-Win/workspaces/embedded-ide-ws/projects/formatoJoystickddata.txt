@@ -1,0 +1,5 @@
+20:06:08.344 -> idx=0, dpad: 0x00, buttons: 0x0000, axis L:   12,    4, axis R:   12,    0, brake:    0, throttle:    0, misc: 0x00, gyro x:-111563 y:180783 z: -1810, accel x:  1453 y: 10331 z:  -585
+20:06:08.344 -> idx=0, dpad: 0x00, buttons: 0x0000, axis L:   12,    4, axis R:   12,    0, brake:    0, throttle:    0, misc: 0x00, gyro x:-38184 y:129317 z:-27726, accel x:  1790 y:  7315 z:   575
+20:06:08.377 -> idx=0, dpad: 0x00, buttons: 0x0000, axis L:   12,    4, axis R:   12,    0, brake:    0, throttle:    0, misc: 0x00, gyro x:-42731 y:128881 z:-41339, accel x:  -333 y:  5862 z:   112
+20:06:08.408 -> idx=0, dpad: 0x00, buttons: 0x0000, axis L:   12,    4, axis R:   16,    0, brake:    0, throttle:    0, misc: 0x00, gyro x:-157783 y:109714 z: 34470, accel x:  1866 y:  7224 z:  2713
+20:06:08.408 -> idx=0, dpad: 0x00, buttons: 0x0000, axis L:   12,    4, axis R:   12,    0, brake:    0, throttle:    0, misc: 0x00, gyro x:113183 y: 97952 z:-42338, accel x:  -144 y:  1288 z:   -91

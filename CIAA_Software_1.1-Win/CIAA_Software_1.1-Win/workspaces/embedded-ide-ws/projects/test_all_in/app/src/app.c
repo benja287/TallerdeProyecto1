@@ -5,9 +5,12 @@
  */
 
 #include "sapi.h"
+#include "sapi_uart.h" 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "chip.h"
+#include <string.h>
+#include <stdio.h>
 
 // ==============================================================================
 // DEFINICIONES DE HARDWARE
@@ -66,6 +69,20 @@
 volatile uint32_t dist1_cm = 0;
 volatile uint32_t dist2_cm = 0;
 volatile uint32_t dist3_cm = 0;
+
+// --- VARIABLES GLOBALES DE CONTROL (UART) ---
+volatile int16_t global_joy_x = 0; // -512 a 512
+volatile int16_t global_joy_y = 0; // -512 a 512
+volatile uint16_t global_throttle = 0; // 0 - 1023
+volatile uint16_t global_brake = 0;    // 0 - 1023
+
+// --- RING BUFFER UART ---
+#define RX_BUFFER_SIZE 512
+volatile uint8_t rxBuffer[RX_BUFFER_SIZE];
+volatile uint16_t rxHead = 0;
+volatile uint16_t rxTail = 0;
+
+static TaskHandle_t xUARTTaskHandle = NULL;
 
 // ==============================================================================
 // FUNCIONES AUXILIARES
@@ -300,10 +317,93 @@ void TaskSensors(void* taskParm) {
         ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
 
         // Loguear
-        printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        // printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
         
         // Retardo para la siguiente vuelta
         vTaskDelay(200 / portTICK_RATE_MS);
+    }
+}
+
+// ==============================================================================
+// TAREAS UART / DECODER
+// ==============================================================================
+
+// Callback de Interrupcion UART (Se ejecuta en contexto de ISR)
+void onRx(void *noData) {
+    uint8_t byte;
+    // Leer byte mientras haya disponibles (aunque es interrupcion byte a byte)
+    while (uartReadByte(UART_232, &byte)) {
+        // Guardar en buffer circular
+        uint16_t nextHead = (rxHead + 1) % RX_BUFFER_SIZE;
+        if (nextHead != rxTail) { // Si no esta lleno
+            rxBuffer[rxHead] = byte;
+            rxHead = nextHead;
+        }
+        
+        // Si detectamos fin de linea, notificar a la tarea de debodificacion
+        // Para procesar el paquete completo lo antes posible
+        if (byte == '\n') {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            vTaskNotifyGiveFromISR(xUARTTaskHandle, &xHigherPriorityTaskWoken);
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+}
+
+// Tarea para decodificar el protocolo CSV
+void TaskUARTDecode(void* taskParm) {
+    xUARTTaskHandle = xTaskGetCurrentTaskHandle();
+    
+    char lineBuffer[128];
+    uint8_t lineIdx = 0;
+    
+    while(1) {
+        // Esperar notificacion de la ISR con TIMEOUT
+        // Si no llegan datos en 200ms, reseteamos las variables (Soft Timeout)
+        if (ulTaskNotifyTake(pdTRUE, 200 / portTICK_RATE_MS) == 0) {
+            // Timeout: Resetear valores a reposo
+            global_joy_x = 0;
+            global_joy_y = 0;
+            global_throttle = 0;
+            global_brake = 0;
+            continue; // Volver a esperar
+        }
+        
+        // Procesar todo lo que haya en el Ring Buffer
+        while (rxTail != rxHead) {
+            uint8_t byte = rxBuffer[rxTail];
+            rxTail = (rxTail + 1) % RX_BUFFER_SIZE;
+            
+            if (byte == '$') {
+                // Inicio de trama, resetear buffer lineal
+                lineIdx = 0;
+            } else if (byte == '\n') {
+                // Fin de trama, procesar
+                lineBuffer[lineIdx] = '\0';
+                
+                // Variables temporales para sscanf
+                int idx, dpad, btns, lx, ly, rx, ry, brk, thr, misc, gx, gy, gz, ax, ay, az;
+                
+                int count = sscanf(lineBuffer, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                                   &idx, &dpad, &btns, &lx, &ly, &rx, &ry, &brk, &thr, &misc, 
+                                   &gx, &gy, &gz, &ax, &ay, &az);
+                                   
+                if (count >= 10) { // Necesitamos hasta brk/thr
+                    // Actualizar variables globales de control
+                    global_joy_x = lx;
+                    global_joy_y = ly;
+                    global_throttle = thr;
+                    global_brake = brk;
+                }
+                
+                lineIdx = 0; // Reset para seguridad
+            } else {
+                // Caracter normal, agregar al buffer
+                if (lineIdx < sizeof(lineBuffer) - 1) {
+                    lineBuffer[lineIdx++] = byte;
+                }
+            }
+        }
     }
 }
 
@@ -322,33 +422,43 @@ void TaskMotors(void* taskParm) {
     gpioWrite(MOTOR_STBY, ON); // Activar driver
 
     while(1) {
-        // Adelante
-        gpioWrite(MOTOR_AIN1, ON); gpioWrite(MOTOR_AIN2, OFF);
-        gpioWrite(MOTOR_BIN1, ON); gpioWrite(MOTOR_BIN2, OFF);
-        pwmWrite(PWMA_PIN, VEL_MEDIA);
-        pwmWrite(PWMB_PIN, VEL_MEDIA);
-        gpioWrite(LEDG, ON);
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
-        // Parar
-        pwmWrite(PWMA_PIN, 0);
-        pwmWrite(PWMB_PIN, 0);
-        gpioWrite(LEDG, OFF);
-        vTaskDelay(1000 / portTICK_RATE_MS);
-
-        // Atras
-        gpioWrite(MOTOR_AIN1, OFF); gpioWrite(MOTOR_AIN2, ON);
-        gpioWrite(MOTOR_BIN1, OFF); gpioWrite(MOTOR_BIN2, ON);
-        pwmWrite(PWMA_PIN, VEL_MEDIA);
-        pwmWrite(PWMB_PIN, VEL_MEDIA);
-        gpioWrite(LEDR, ON); // Indicar reversa
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
-        // Parar
-        pwmWrite(PWMA_PIN, 0);
-        pwmWrite(PWMB_PIN, 0);
-        gpioWrite(LEDR, OFF);
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        // --- CONTROL POR GATILLOS (R2/L2) ---
+        uint16_t thr = global_throttle;
+        uint16_t brk = global_brake;
+        
+        // Zona muerta de 50 (Rango 0-1023)
+        if (thr > 50 && brk < 50) {
+            // ADELANTE
+            // Map 50..1023 -> 80..255 (Arrancar con un poco de fuerza)
+            uint32_t pwm = 80 + ((thr - 50) * (255 - 80) / (1023 - 50));
+            
+            gpioWrite(MOTOR_AIN1, ON); gpioWrite(MOTOR_AIN2, OFF);
+            gpioWrite(MOTOR_BIN1, ON); gpioWrite(MOTOR_BIN2, OFF);
+            pwmWrite(PWMA_PIN, (uint8_t)pwm);
+            pwmWrite(PWMB_PIN, (uint8_t)pwm);
+            gpioWrite(LEDG, ON);
+            gpioWrite(LEDR, OFF);
+            
+        } else if (brk > 50 && thr < 50) {
+            // REVERSA
+            uint32_t pwm = 80 + ((brk - 50) * (255 - 80) / (1023 - 50));
+            
+            gpioWrite(MOTOR_AIN1, OFF); gpioWrite(MOTOR_AIN2, ON);
+            gpioWrite(MOTOR_BIN1, OFF); gpioWrite(MOTOR_BIN2, ON);
+            pwmWrite(PWMA_PIN, (uint8_t)pwm);
+            pwmWrite(PWMB_PIN, (uint8_t)pwm);
+            gpioWrite(LEDR, ON);
+            gpioWrite(LEDG, OFF);
+            
+        } else {
+            // STOP (Freno o ambos apretados o reposo)
+            pwmWrite(PWMA_PIN, 0);
+            pwmWrite(PWMB_PIN, 0);
+            gpioWrite(LEDG, OFF);
+            gpioWrite(LEDR, OFF);
+        }
+        
+        vTaskDelay(20 / portTICK_RATE_MS); // 50Hz control loop
     }
 }
 // --- SERVO LIMITS ---
@@ -370,23 +480,21 @@ void TaskServo(void* taskParm) {
     uint8_t max_angle = SERVO_MAX;
 
     while(1) {
-        set_servo_angle(angle);
+        // Leer Joystick X (-512 a 511)
+        int16_t joyX = global_joy_x;
         
-        if (movingLeft == 0) {
-            if (angle + step >= max_angle) {
-                angle = max_angle;
-                movingLeft = 1; 
-            } else {
-                angle += step;
-            }
-        } else {
-            if (angle <= min_angle + step) {
-                angle = min_angle;
-                movingLeft = 0; 
-            } else {
-                angle -= step;
-            }
-        }
+        // Mapear -512..512 a 120..180 (o rango seguro)
+        // Centro = 150
+        // Rango +/- 30 grados
+        
+        // Calculo: 150 + (joyX * 30 / 512)
+        int16_t targetAngle = 150 + (joyX * 30 / 512);
+        
+        // Limitar por seguridad
+        if (targetAngle < SERVO_MIN) targetAngle = SERVO_MIN;
+        if (targetAngle > SERVO_MAX) targetAngle = SERVO_MAX;
+        
+        set_servo_angle((uint8_t)targetAngle);
         
         vTaskDelay(20 / portTICK_RATE_MS); 
     }
@@ -427,11 +535,20 @@ int main(void) {
                             Timer_microsecondsToTicks(angleToPulseWidth(servoAngle)),
                             timer0CompareMatch1Callback);
 
-    printf("Sistema iniciado: Motores PWM Hardware + Servo Timer0 IRQ\r\n");
+    // --- CONFIGURACION UART 232 (ESP32) ---
+    // Inicializar UART_232 a 115200 baudios
+    uartConfig(UART_232, 115200);
+    // Configurar Callback de Recepcion
+    uartCallbackSet(UART_232, UART_RECEIVE, onRx, NULL);
+    // Habilitar Interrupciones para esta UART
+    uartInterrupt(UART_232, true);
+
+    printf("Sistema iniciado: Motores PWM Hardware + Servo Timer0 IRQ + UART232 ESP32\r\n");
     
     // Crear tareas
     xTaskCreate(TaskBlink,   "Blink",   128, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(TaskSensors, "Sensors", 256, NULL, tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(TaskUARTDecode, "Decoder", 512, NULL, tskIDLE_PRIORITY + 3, NULL); // Prioridad alta para vaciar buffer
     xTaskCreate(TaskMotors,  "Motors",  256, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(TaskServo,   "Servo",   256, NULL, tskIDLE_PRIORITY + 1, NULL);
 

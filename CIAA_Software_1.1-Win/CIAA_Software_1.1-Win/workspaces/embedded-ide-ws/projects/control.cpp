@@ -68,25 +68,25 @@ void dumpGamepad(ControllerPtr ctl) {
 }
 
 void dumpGamepad2(ControllerPtr ctl) {
+    // Compact CSV Format: $idx,dpad,btns,lx,ly,rx,ry,brk,thr,misc,gx,gy,gz,ax,ay,az
     Serial2.printf(
-        "idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, %4d, brake: %4d, throttle: %4d, "
-        "misc: 0x%02x, gyro x:%6d y:%6d z:%6d, accel x:%6d y:%6d z:%6d\n",
-        ctl->index(),        // Controller Index
-        ctl->dpad(),         // D-pad
-        ctl->buttons(),      // bitmask of pressed buttons
-        ctl->axisX(),        // (-511 - 512) left X Axis
-        ctl->axisY(),        // (-511 - 512) left Y axis
-        ctl->axisRX(),       // (-511 - 512) right X axis
-        ctl->axisRY(),       // (-511 - 512) right Y axis
-        ctl->brake(),        // (0 - 1023): brake button
-        ctl->throttle(),     // (0 - 1023): throttle (AKA gas) button
-        ctl->miscButtons(),  // bitmask of pressed "misc" buttons
-        ctl->gyroX(),        // Gyro X
-        ctl->gyroY(),        // Gyro Y
-        ctl->gyroZ(),        // Gyro Z
-        ctl->accelX(),       // Accelerometer X
-        ctl->accelY(),       // Accelerometer Y
-        ctl->accelZ()        // Accelerometer Z
+        "$%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+        ctl->index(),        // 1
+        ctl->dpad(),         // 2
+        ctl->buttons(),      // 3
+        ctl->axisX(),        // 4 (Lx)
+        ctl->axisY(),        // 5 (Ly)
+        ctl->axisRX(),       // 6 (Rx)
+        ctl->axisRY(),       // 7 (Ry)
+        ctl->brake(),        // 8
+        ctl->throttle(),     // 9
+        ctl->miscButtons(),  // 10
+        ctl->gyroX(),        // 11
+        ctl->gyroY(),        // 12
+        ctl->gyroZ(),        // 13
+        ctl->accelX(),       // 14
+        ctl->accelY(),       // 15
+        ctl->accelZ()        // 16
     );
 }
 
@@ -312,5 +312,6 @@ void loop() {
     // https://stackoverflow.com/questions/66278271/task-watchdog-got-triggered-the-tasks-did-not-reset-the-watchdog-in-time
 
     //     vTaskDelay(1);
-    delay(10);
+    // Reduce frequency to 20Hz (50ms) to avoid UART saturation
+    delay(50);
 }

@@ -4,6 +4,10 @@ SAPI_BASE=libs/sapi/sapi_v0.5.2
 
 DEFINES+=USE_SAPI
 
+ifeq ($(USE_SAPI_INTERRUPTS),y)
+DEFINES+=SAPI_USE_INTERRUPTS
+endif
+
 INCLUDES += -I$(SAPI_BASE)/base/inc
 INCLUDES += -I$(SAPI_BASE)/soc/core/inc
 INCLUDES += -I$(SAPI_BASE)/soc/peripherals/inc
