@@ -331,21 +331,23 @@ void TaskSensors(void* taskParm) {
 // Callback de Interrupcion UART (Se ejecuta en contexto de ISR)
 void onRx(void *noData) {
     uint8_t byte;
-    // Leer byte mientras haya disponibles (aunque es interrupcion byte a byte)
+    // Leer byte mientras haya disponibles 
     while (uartReadByte(UART_232, &byte)) {
         // Guardar en buffer circular
         uint16_t nextHead = (rxHead + 1) % RX_BUFFER_SIZE;
-        if (nextHead != rxTail) { // Si no esta lleno
+        if (nextHead != rxTail) { 
             rxBuffer[rxHead] = byte;
             rxHead = nextHead;
         }
         
         // Si detectamos fin de linea, notificar a la tarea de debodificacion
-        // Para procesar el paquete completo lo antes posible
         if (byte == '\n') {
-            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-            vTaskNotifyGiveFromISR(xUARTTaskHandle, &xHigherPriorityTaskWoken);
-            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            // CRITICAL: Verificar que la tarea ha sido creada
+            if (xUARTTaskHandle != NULL) {
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+                vTaskNotifyGiveFromISR(xUARTTaskHandle, &xHigherPriorityTaskWoken);
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
         }
     }
 }
@@ -394,6 +396,14 @@ void TaskUARTDecode(void* taskParm) {
                     global_joy_y = ly;
                     global_throttle = thr;
                     global_brake = brk;
+                    // Debug intermitente (cada 20 updates, aprox 1 seg)
+                    static int debug_cnt = 0;
+                    if (debug_cnt++ > 20) {
+                         debug_cnt = 0;
+                         printf("Parsed: thr=%d, brk=%d\r\n", thr, brk);
+                    }
+                } else {
+                     printf("Parse Err: count=%d. Line: %s\r\n", count, lineBuffer);
                 }
                 
                 lineIdx = 0; // Reset para seguridad
@@ -419,43 +429,72 @@ void TaskMotors(void* taskParm) {
     // Inicializar PWM hardware
     // Nota: La config de frecuencia se hace en main
     
+#define RAMP_STEP 25 // Paso de rampa (25 * 50Hz = 1250 units/s => 255/1250 = ~0.2s full scale)
+
     gpioWrite(MOTOR_STBY, ON); // Activar driver
+    
+    // Estado interno para rampa (Signed: +Adelante, -Atras)
+    static int16_t current_pwm_signed = 0;
 
     while(1) {
-        // --- CONTROL POR GATILLOS (R2/L2) ---
+        // --- CALCULO OBJETIVO ---
         uint16_t thr = global_throttle;
         uint16_t brk = global_brake;
+        int16_t target_pwm_signed = 0;
         
         // Zona muerta de 50 (Rango 0-1023)
         if (thr > 50 && brk < 50) {
-            // ADELANTE
-            // Map 50..1023 -> 80..255 (Arrancar con un poco de fuerza)
-            uint32_t pwm = 80 + ((thr - 50) * (255 - 80) / (1023 - 50));
-            
-            gpioWrite(MOTOR_AIN1, ON); gpioWrite(MOTOR_AIN2, OFF);
-            gpioWrite(MOTOR_BIN1, ON); gpioWrite(MOTOR_BIN2, OFF);
-            pwmWrite(PWMA_PIN, (uint8_t)pwm);
-            pwmWrite(PWMB_PIN, (uint8_t)pwm);
-            gpioWrite(LEDG, ON);
-            gpioWrite(LEDR, OFF);
+            // ADELANTE (Objetivo Positivo)
+            // Map 50..1023 -> 80..255 
+            uint32_t val = 80 + ((thr - 50) * (255 - 80) / (1023 - 50));
+            target_pwm_signed = (int16_t)val;
             
         } else if (brk > 50 && thr < 50) {
-            // REVERSA
-            uint32_t pwm = 80 + ((brk - 50) * (255 - 80) / (1023 - 50));
+            // REVERSA (Objetivo Negativo)
+            uint32_t val = 80 + ((brk - 50) * (255 - 80) / (1023 - 50));
+            target_pwm_signed = -(int16_t)val;
+        } else {
+            // STOP
+            target_pwm_signed = 0;
+        }
+        
+        // --- APLICAR RAMPA (SOFT START) ---
+        if (current_pwm_signed < target_pwm_signed) {
+            current_pwm_signed += RAMP_STEP;
+            if (current_pwm_signed > target_pwm_signed) current_pwm_signed = target_pwm_signed;
+        } else if (current_pwm_signed > target_pwm_signed) {
+            current_pwm_signed -= RAMP_STEP;
+            if (current_pwm_signed < target_pwm_signed) current_pwm_signed = target_pwm_signed;
+        }
+        
+        // --- ACTUAR HARDWARE ---
+        if (current_pwm_signed > 0) {
+            // Adelante
+            gpioWrite(MOTOR_AIN1, ON); gpioWrite(MOTOR_AIN2, OFF);
+            gpioWrite(MOTOR_BIN1, ON); gpioWrite(MOTOR_BIN2, OFF);
+            pwmWrite(PWMA_PIN, (uint8_t)current_pwm_signed);
+            pwmWrite(PWMB_PIN, (uint8_t)current_pwm_signed);
+            gpioWrite(LEDG, ON); gpioWrite(LEDR, OFF);
             
+        } else if (current_pwm_signed < 0) {
+            // Reversa
             gpioWrite(MOTOR_AIN1, OFF); gpioWrite(MOTOR_AIN2, ON);
             gpioWrite(MOTOR_BIN1, OFF); gpioWrite(MOTOR_BIN2, ON);
-            pwmWrite(PWMA_PIN, (uint8_t)pwm);
-            pwmWrite(PWMB_PIN, (uint8_t)pwm);
-            gpioWrite(LEDR, ON);
-            gpioWrite(LEDG, OFF);
+            // Invertir para PWM absoluto
+            pwmWrite(PWMA_PIN, (uint8_t)(-current_pwm_signed));
+            pwmWrite(PWMB_PIN, (uint8_t)(-current_pwm_signed));
+            gpioWrite(LEDR, ON); gpioWrite(LEDG, OFF);
             
         } else {
-            // STOP (Freno o ambos apretados o reposo)
-            pwmWrite(PWMA_PIN, 0);
-            pwmWrite(PWMB_PIN, 0);
-            gpioWrite(LEDG, OFF);
-            gpioWrite(LEDR, OFF);
+            // Stop
+            pwmWrite(PWMA_PIN, 0); pwmWrite(PWMB_PIN, 0);
+            gpioWrite(LEDG, OFF); gpioWrite(LEDR, OFF);
+        }
+        
+        static int m_debug = 0;
+        if (m_debug++ > 50) { // 1 seg
+            m_debug = 0;
+            printf("Motors: Tgt=%d, Curr=%d\r\n", target_pwm_signed, current_pwm_signed);
         }
         
         vTaskDelay(20 / portTICK_RATE_MS); // 50Hz control loop
