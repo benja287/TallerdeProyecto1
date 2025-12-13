@@ -51,6 +51,10 @@ volatile uint32_t * DWT_CTRL   = (uint32_t *)0xE0001000;
 //Registro donde se cuentan los ciclos de clock.
 volatile uint32_t * DWT_CYCCNT = (uint32_t *)0xE0001004;
 
+// Definiciones para habilitar el DWT (Data Watchpoint and Trace)
+#define DEMCR           (*((volatile uint32_t *)0xE000EDFC))
+#define TRCENA          (1 << 24)
+
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
@@ -71,6 +75,16 @@ bool_t cyclesCounterInit( uint32_t clockSpeed )
 {
    //Asigna  a la variable local ClockSpeed el valor recibido como argumento.
    ClockSpeed = clockSpeed;
+   
+   // Habilitar TRCENA en DEMCR si no esta habilitado
+   // Esto es necesario para que funcione el DWT fuera de una sesion de debug
+   if ((DEMCR & TRCENA) == 0) {
+       DEMCR |= TRCENA;
+   }
+
+   // Reseteamos el contador antes de habilitarlo
+   *DWT_CYCCNT = 0;
+
    //Iniciar el contador de ciclos de clock.
    *DWT_CTRL  |= 1;
    return TRUE;
