@@ -11,6 +11,7 @@
 #include "chip.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // ==============================================================================
 // DEFINICIONES DE HARDWARE
@@ -76,7 +77,57 @@ volatile int16_t global_joy_y = 0; // -512 a 512
 volatile uint16_t global_throttle = 0; // 0 - 1023
 volatile uint16_t global_brake = 0;    // 0 - 1023
 
+// --- MODOS DE OPERACION ---
+typedef enum {
+    MODE_MANUAL,
+    MODE_SAFETY_STOP,
+    MODE_AVOIDANCE
+} OperationMode;
+
+volatile OperationMode currentMode = MODE_MANUAL;
+// Estados de Evasión
+#define AVOID_STATE_IDLE      0
+#define AVOID_STATE_REVERSING 1
+#define AVOID_STATE_RECOVERING 2
+
+volatile uint8_t avoidState = AVOID_STATE_IDLE; 
+const char* MODE_NAMES[] = {"MANUAL", "SAFETY STOP", "AVOIDANCE"};
+
+
+
+// --- CONSTANTES DE COMANDO Y SEGURIDAD ---
+// --- CONSTANTES DE COMANDO Y SEGURIDAD ---
+#define BTN_TRIANGLE_MASK 16 
+#define BTN_L1_MASK       1024 // Value 1024 (Bit 10) or 4? Common Bluepad L1 is often 4 or 16. 
+// Para estar seguros, usaremos un chequeo mas flexible o imprimiremos valores.
+// Nota: En protocolo Bluepad estandar:
+// Down=1, Right=2, Left=4, Up=8
+// Triangle=16, Circle=32, Cross=64, Square=128
+// L1=256, R1=512 ? 
+// Mejor aceptamos CUALQUIERA de los botones superiores para cambiar modo por ahora.
+#define BTN_CHANGE_MODE_MASK (16 | 4 | 32 | 128 | 256) // Tri, Left, Cir, Sqr, L1(Maybe)
+
+#define STOP_DIST_CM      10 // Distancia critica para frenado (Fixed)
+#define AVOID_DIST_CM     30 // Distancia para inicio de esquiva (Reduced 60->30)
+#define AVOID_SPEED_PWM   180 // AUMENTADO de 160->200 para fuerza bruta
+
+
+
+
+
+
+
+
+// --- UTILS ---
+// Filtro de Mediana Simple (Win 3)
+uint32_t get_median(uint32_t a, uint32_t b, uint32_t c) {
+    if ((a >= b && a <= c) || (a >= c && a <= b)) return a;
+    if ((b >= a && b <= c) || (b >= c && b <= a)) return b;
+    return c;
+}
+
 // --- RING BUFFER UART ---
+
 #define RX_BUFFER_SIZE 512
 volatile uint8_t rxBuffer[RX_BUFFER_SIZE];
 volatile uint16_t rxHead = 0;
@@ -279,12 +330,40 @@ void set_servo_angle(uint8_t angle) {
     // El cambio tomara efecto en el siguiente ciclo de interrupcion (max 20ms)
 }
 
-void TaskBlink(void* taskParm) {
+// Tarea de Estado (Luces)
+void TaskStatus(void* taskParm) {
+    // Configurar LEDs de estado
+    gpioConfig(LED1, GPIO_OUTPUT);
+    gpioConfig(LED2, GPIO_OUTPUT);
+    gpioConfig(LED3, GPIO_OUTPUT);
+
     while(1) {
+        // Actualizar LEDs segun Modo
+        switch(currentMode) {
+            case MODE_MANUAL:
+                gpioWrite(LED1, ON);
+                gpioWrite(LED2, OFF);
+                gpioWrite(LED3, OFF);
+                break;
+            case MODE_SAFETY_STOP:
+                gpioWrite(LED1, OFF);
+                gpioWrite(LED2, ON); 
+                gpioWrite(LED3, OFF);
+                break;
+            case MODE_AVOIDANCE:
+                gpioWrite(LED1, OFF);
+                gpioWrite(LED2, OFF);
+                gpioWrite(LED3, ON);
+                break;
+        }
+        
+        // Blink del LEDB como health check
         gpioToggle(LEDB);
-        vTaskDelay(500 / portTICK_RATE_MS); // 0.5Hz
+        
+        vTaskDelay(200 / portTICK_RATE_MS); // 5Hz update
     }
 }
+
 
 void TaskSensors(void* taskParm) {
     config_sensor_pins();
@@ -292,21 +371,32 @@ void TaskSensors(void* taskParm) {
     // Guardar handle para notificaciones
     xSensorTaskHandle = xTaskGetCurrentTaskHandle();
 
+    // Buffers para mediana (3 muestras)
+    uint32_t buf1[3] = {999,999,999};
+    uint32_t buf2[3] = {999,999,999};
+    uint32_t buf3[3] = {999,999,999};
+    uint8_t idx = 0;
+
     while(1) {
         // Sensor 1
         portENTER_CRITICAL();
         trigger_sensor(TRIG1_GPIO_P, TRIG1_GPIO_B);
         portEXIT_CRITICAL();
-        // Esperar max 35ms (eco maximo seguro + margen)
-        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
+        ulTaskNotifyTake(pdTRUE, 30 / portTICK_RATE_MS);
         
-        vTaskDelay(15 / portTICK_RATE_MS); // Pequeño delay entre sensores
+        // Guardar valor raw (si es 0, usamos el anterior valido o 999)
+        if (dist1_cm == 0) dist1_cm = buf1[ (idx+2)%3 ]; // Keep last
+        buf1[idx] = dist1_cm;
+
+        vTaskDelay(15 / portTICK_RATE_MS); 
 
         // Sensor 2
         portENTER_CRITICAL();
         trigger_sensor(TRIG2_GPIO_P, TRIG2_GPIO_B);
         portEXIT_CRITICAL();
-        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
+        ulTaskNotifyTake(pdTRUE, 30 / portTICK_RATE_MS);
+        if (dist2_cm == 0) dist2_cm = buf2[ (idx+2)%3 ];
+        buf2[idx] = dist2_cm;
         
         vTaskDelay(15 / portTICK_RATE_MS);
 
@@ -314,13 +404,34 @@ void TaskSensors(void* taskParm) {
         portENTER_CRITICAL();
         trigger_sensor(TRIG3_GPIO_P, TRIG3_GPIO_B);
         portEXIT_CRITICAL();
-        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
+        ulTaskNotifyTake(pdTRUE, 30 / portTICK_RATE_MS);
+        if (dist3_cm == 0) dist3_cm = buf3[ (idx+2)%3 ]; 
+        buf3[idx] = dist3_cm;
 
-        // Loguear
-        printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        // --- PUBLICAR MEDIANA ---
+        // Actualizamos las variables globales con el valor filtrado
+        // OJO: dist1_cm es volatile global. Sobreescribirla aqui es un poco race-condition con ISR.
+        // Mejor usar variables shadow para logica y dejar las globales para ISR.
+        // PERO, como la logica usa las globales "distX_cm", vamos a actualizar esas mismas
+        // justo despues de calcular.
         
-        // Retardo para la siguiente vuelta
-        vTaskDelay(200 / portTICK_RATE_MS);
+        // Mediana
+        uint32_t m1 = get_median(buf1[0], buf1[1], buf1[2]);
+        uint32_t m2 = get_median(buf2[0], buf2[1], buf2[2]);
+        uint32_t m3 = get_median(buf3[0], buf3[1], buf3[2]);
+        
+        // Sobreescribimos globales para que TaskMotors use la mediana
+        dist1_cm = m1;
+        dist2_cm = m2;
+        dist3_cm = m3;
+
+        // Loguear (muestras filtradas)
+        printf("S(Filt): %dcm, %dcm, %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        
+        idx = (idx + 1) % 3;
+
+        // Retardo
+        vTaskDelay(50 / portTICK_RATE_MS);
     }
 }
 
@@ -396,8 +507,30 @@ void TaskUARTDecode(void* taskParm) {
                     global_joy_y = ly;
                     global_throttle = thr;
                     global_brake = brk;
+
+                    // --- DETECCION DE CAMBIO DE MODO ---
+                    static uint16_t last_btns = 0;
+                    // Trigger en CUALQUIER boton de la mascara (L1, Triangulo, etc)
+                    bool btn_pressed = (btns & BTN_CHANGE_MODE_MASK);
+                    bool last_pressed = (last_btns & BTN_CHANGE_MODE_MASK);
+
+                    if (btn_pressed && !last_pressed) {
+                        if (currentMode == MODE_MANUAL) currentMode = MODE_SAFETY_STOP;
+                        else if (currentMode == MODE_SAFETY_STOP) currentMode = MODE_AVOIDANCE;
+                        else currentMode = MODE_MANUAL;
+                        
+                        // Resetear estado de maniobra al cambiar modo
+                        avoidState = AVOID_STATE_IDLE;
+                        
+                        printf(">> CAMBIO MODO: %s (Btns: %d)\r\n", MODE_NAMES[currentMode], btns);
+
+                    }
+                    last_btns = btns;
+
+
                     // Debug intermitente (cada 20 updates, aprox 1 seg)
                     static int debug_cnt = 0;
+
                     if (debug_cnt++ > 20) {
                          debug_cnt = 0;
                          printf("Parsed: thr=%d, brk=%d\r\n", thr, brk);
@@ -457,8 +590,94 @@ void TaskMotors(void* taskParm) {
             // STOP
             target_pwm_signed = 0;
         }
+
+        // --- OVERRIDES DE SEGURIDAD (MODOS) ---
+        // Tratamiento de distancias (filtrar 0s/errores con "Hold")
+        // Mantenemos el ultimo valor valido para evitar picos de "999" si el sensor falla 1 vez
+        static uint32_t last_d1 = 999;
+        static uint32_t last_d2 = 999;
+        static uint32_t last_d3 = 999;
+
+        if (dist1_cm != 0) last_d1 = dist1_cm;
+        if (dist2_cm != 0) last_d2 = dist2_cm;
+        if (dist3_cm != 0) last_d3 = dist3_cm;
+
+        uint32_t d1 = last_d1;
+        uint32_t d2 = last_d2;
+        uint32_t d3 = last_d3;
+        
+        uint32_t min_dist = d1;
+        if (d2 < min_dist) min_dist = d2;
+        if (d3 < min_dist) min_dist = d3;
+
+        if (currentMode == MODE_SAFETY_STOP) {
+
+            // -- UMBRAL FIJO (5cm) --
+            // Si hay obstaculo cerca Y queremos ir ADELANTE (>0)
+            if (min_dist < STOP_DIST_CM && target_pwm_signed > 0) {
+                target_pwm_signed = 0; // Frenar
+                current_pwm_signed = 0; // Stop inmediato
+            }
+        
+        } else if (currentMode == MODE_AVOIDANCE) {
+            // --- MAQUINA DE ESTADOS DE EVASION AUTOMATICA ---
+            static int recover_tick = 0;
+
+            // 1. TRANSICIONES
+            if (avoidState == AVOID_STATE_IDLE) {
+                // Si estamos MUY cerca -> Start REVERSING
+                // Ahora coincide con AVOID_DIST_CM (30) para reaccion inmediata
+                if (min_dist < 30) {
+                    avoidState = AVOID_STATE_REVERSING;
+                    printf(">> AUTO: TOO CLOSE! REVERSING...\r\n");
+                }
+            }
+
+            else if (avoidState == AVOID_STATE_REVERSING) {
+                // Si nos alejamos lo suficiente -> Start RECOVERING (Auto Forward)
+                if (min_dist > 45) {
+                    avoidState = AVOID_STATE_RECOVERING;
+                    recover_tick = 0; // Resetear timer de recuperacion
+                    printf(">> AUTO: CLEAR! RECOVERING (FORWARD)...\r\n");
+                }
+            }
+            else if (avoidState == AVOID_STATE_RECOVERING) {
+                 recover_tick++;
+                 // Mantener el avance AL MENOS 50 ticks (1 segundo aprox)
+                 // Y ademas requerie que este despejado (> 60)
+                 if (recover_tick > 50 && min_dist > 60) {
+                     avoidState = AVOID_STATE_IDLE;
+                     printf(">> AUTO: DONE. MANUAL CONTROL.\r\n");
+                 }
+                 else if (min_dist < 20) {
+                     avoidState = AVOID_STATE_REVERSING; // Panic logic (si choca de nuevo)
+                     recover_tick = 0;
+                 }
+            }
+
+            // 2. EJECUCION MOTOR (Overrides)
+            if (avoidState == AVOID_STATE_REVERSING) {
+                target_pwm_signed = -220; // Reversa Fuerte Automatica
+            }
+            else if (avoidState == AVOID_STATE_RECOVERING) {
+                target_pwm_signed = 200;  // Avance Fuerte Automatico (Salida)
+            }
+            
+            // --- MANIOBRA NORMAL DE ESQUIVE (Solo Asistencia) ---
+            // Solo si estamos en IDLE (no en secuencia automatica)
+            else if (min_dist < AVOID_DIST_CM && target_pwm_signed != 0) {
+                // Limitar velocidad para el volantazo
+                int16_t sign = (target_pwm_signed > 0) ? 1 : -1;
+
+                // Si el target es mayor que la velocidad de maniobra, lo topeamos
+                if (abs(target_pwm_signed) > AVOID_SPEED_PWM) {
+                    target_pwm_signed = sign * AVOID_SPEED_PWM;
+                }
+            }
+        }
         
         // --- APLICAR RAMPA (SOFT START) ---
+
         if (current_pwm_signed < target_pwm_signed) {
             current_pwm_signed += RAMP_STEP;
             if (current_pwm_signed > target_pwm_signed) current_pwm_signed = target_pwm_signed;
@@ -533,6 +752,64 @@ void TaskServo(void* taskParm) {
         if (targetAngle < SERVO_MIN) targetAngle = SERVO_MIN;
         if (targetAngle > SERVO_MAX) targetAngle = SERVO_MAX;
         
+        // --- OVERRIDES DE SEGURIDAD (MODO AVOIDANCE) ---
+        if (currentMode == MODE_AVOIDANCE) {
+            uint32_t d1 = (dist1_cm == 0) ? 999 : dist1_cm; 
+            uint32_t d2 = (dist2_cm == 0) ? 999 : dist2_cm;
+            uint32_t d3 = (dist3_cm == 0) ? 999 : dist3_cm;
+            uint32_t min_dist = d1;
+            if (d2 < min_dist) min_dist = d2;
+            if (d3 < min_dist) min_dist = d3;
+
+            if (min_dist < AVOID_DIST_CM) {
+                // Volantazo hacia el lado con mas despeje
+                // Asumimos: S1=Izquierda, S2=Centro, S3=Derecha
+                // Logica simple: Comparar Izq (d1) vs Der (d3)
+                // Si d1 (Izq) > d3 (Der) -> Girar Izquierda (Angulo MENOR a 150? Depende servo)
+                
+                // NOTA: En servos RC standard:
+                // 150 = Centro, 120 = Izquierda (Min), 180 = Derecha (Max)
+                
+                // Logging para Feedback VISUAL en consola
+                static int log_cnt = 0;
+
+                // --- CALCULO DIRECCION (Hysteresis/Decision) ---
+                if (avoidState == AVOID_STATE_REVERSING) {
+                    // --- MODO REVERSA: INVERTIR GIRO ---
+                    if (d1 > d3) {
+                        targetAngle = SERVO_MAX; // Nose Left -> Steer Right
+                        if (log_cnt++ > 10) { printf(">> REV: NOSE LEFT (Steer R)\r\n"); log_cnt=0; }
+                    } else {
+                        targetAngle = SERVO_MIN; // Nose Right -> Steer Left
+                        if (log_cnt++ > 10) { printf(">> REV: NOSE RIGHT (Steer L)\r\n"); log_cnt=0; }
+                    }
+                } 
+                else {
+                    // --- MODO NORMAL O RECOVERING (FORWARD) ---
+                    // En RECOVERING tambien usamos logica normal (ir al hueco)
+                    if (d1 > d3) {
+                        // + Espacio a la IZQUIERDA -> Volantazo Izquierda (MIN)
+                        targetAngle = SERVO_MIN; 
+                        if (log_cnt++ > 10) { 
+                            printf(">> AVOID: GOING LEFT (L:%d > R:%d)\r\n", d1, d3); 
+                            log_cnt=0; 
+                        }
+                    } else {
+                        // + Espacio a la DERECHA -> Volantazo Derecha (MAX)
+                        targetAngle = SERVO_MAX;
+                        if (log_cnt++ > 10) { 
+                            printf(">> AVOID: GOING RIGHT (R:%d >= L:%d)\r\n", d3, d1); 
+                            log_cnt=0; 
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+        
         set_servo_angle((uint8_t)targetAngle);
         
         vTaskDelay(20 / portTICK_RATE_MS); 
@@ -585,7 +862,9 @@ int main(void) {
     printf("Sistema iniciado: Motores PWM Hardware + Servo Timer0 IRQ + UART232 ESP32\r\n");
     
     // Crear tareas
-    xTaskCreate(TaskBlink,   "Blink",   128, NULL, tskIDLE_PRIORITY + 1, NULL);
+    // Crear tareas
+    xTaskCreate(TaskStatus,  "Status",  128, NULL, tskIDLE_PRIORITY + 1, NULL);
+
     xTaskCreate(TaskSensors, "Sensors", 512, NULL, tskIDLE_PRIORITY + 2, NULL);
     xTaskCreate(TaskUARTDecode, "Decoder", 512, NULL, tskIDLE_PRIORITY + 3, NULL); // Prioridad alta para vaciar buffer
     xTaskCreate(TaskMotors,  "Motors",  256, NULL, tskIDLE_PRIORITY + 1, NULL);
