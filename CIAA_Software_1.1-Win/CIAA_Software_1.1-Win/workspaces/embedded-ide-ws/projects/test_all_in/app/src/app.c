@@ -32,6 +32,9 @@
 // --- SERVO (S3003) ---
 #define SERVO_PIN      T_COL2
 #define SERVO_FREQ     50
+#define SERVO_CENTER   150
+#define SERVO_MIN      132 // 150 - 30
+#define SERVO_MAX      177 // 150 + 30 (Limite fisico software)
 
 // --- SENSORES ULTRASONICOS ---
 // Sensor 1
@@ -104,6 +107,21 @@ volatile uint16_t rxHead = 0;
 volatile uint16_t rxTail = 0;
 
 static TaskHandle_t xUARTTaskHandle = NULL;
+
+// --- VARIABLES PARA MANIOBRA EVASION ---
+typedef enum {
+    AVOID_IDLE,      // Control Manual
+    AVOID_REVERSING, // Auto: Atras
+    AVOID_TURNING,   // Auto: Espera giro servo
+    AVOID_FORWARDING // Auto: Adelante (Esquivando)
+} AvoidState;
+
+volatile AvoidState avoidState = AVOID_IDLE;
+volatile int8_t avoidTurnTarget = 0; // -1: Izq, 1: Der (LEGACY - Replaced by avoidTurnAngle)
+volatile uint8_t avoidTurnAngle = 150; // Angulo calculado dinamicamente
+
+// Snapshots de memoria
+volatile uint32_t old_d1 = 0, old_d2 = 0, old_d3 = 0;
 
 // ==============================================================================
 // FUNCIONES AUXILIARES
@@ -544,23 +562,108 @@ void TaskMotors(void* taskParm) {
         if (d2 < min_dist) min_dist = d2;
         if (d3 < min_dist) min_dist = d3;
 
+        // Maquina de Estados de Evasion (Supera al Control Manual)
+        static int avoid_timer = 0;
+
+        // Si cambiamos de modo fuera de avoidance, resetear estado
+        if (currentMode != MODE_AVOIDANCE) {
+            avoidState = AVOID_IDLE;
+        }
+
+#define MANEUVER_90_TIME_MS 1500 // Tiempo estimado para giro de 90 grados y retroceso seguro
+#define MANEUVER_TICKS      (MANEUVER_90_TIME_MS / 5) // 5ms per tick
+
         if (currentMode == MODE_SAFETY_STOP) {
-            // -- UMBRAL FIJO (5cm) --
-            // Si hay obstaculo cerca Y queremos ir ADELANTE (>0)
-            if (min_dist < STOP_DIST_CM && target_pwm_signed > 0) {
+            // -- Lógica Safety Stop --
+             if (min_dist < STOP_DIST_CM && target_pwm_signed > 0) {
                 target_pwm_signed = 0; // Frenar
                 current_pwm_signed = 0; // Stop inmediato
             }
-        
+
         } else if (currentMode == MODE_AVOIDANCE) {
-            // Si hay obstaculo, limitar velocidad para maniobrar
-            if (min_dist < AVOID_DIST_CM && target_pwm_signed != 0) {
-                // Si ibamos rapido, bajamos la velocidad
-                int16_t sign = (target_pwm_signed > 0) ? 1 : -1;
-                // Si el target es mayor que la velocidad de maniobra, lo topeamos
-                if (abs(target_pwm_signed) > AVOID_SPEED_PWM) {
-                    target_pwm_signed = sign * AVOID_SPEED_PWM;
-                }
+            
+            switch(avoidState) {
+                case AVOID_IDLE:
+                    // 1. Control Manual (Pass-through)
+                    // ... target_pwm_signed ya tiene el valor del joystick
+                    
+                    // 2. Trigger Check: Pared cerca (<20cm) Y Acelerando
+                    if (min_dist < 20 && target_pwm_signed > 0) {
+                        // INICIAR MANIOBRA
+                        avoidState = AVOID_REVERSING;
+                        avoid_timer = 0;
+                        current_pwm_signed = 0; // Stop inicial
+                        target_pwm_signed = 0;
+                        
+                        // SNAPSHOT: Recordar situacion actual
+                        old_d1 = d1; old_d2 = d2; old_d3 = d3;
+                    }
+                    break;
+                    
+                case AVOID_REVERSING:
+                    // Retroceder Fuerte (Ganar espacio)
+                    target_pwm_signed = -150; 
+                    
+                    if (avoid_timer++ > MANEUVER_TICKS) {
+                        // FIN RETROCESO -> CALCULAR GIRO INTELIGENTE
+                        avoidState = AVOID_TURNING;
+                        avoid_timer = 0;
+                        target_pwm_signed = 0; // Stop
+                        
+                        // --- FUSION DE DATOS ---
+                        // Ponderar: El espacio actual vale el doble que el anterior
+                        int32_t score_left  = d1 + (old_d1 / 2);
+                        int32_t score_right = d3 + (old_d3 / 2);
+                        
+                        // Diferencia: Positivo = Mas espacio Dcha, Negativo = Mas espacio Izq
+                        int32_t error = score_right - score_left;
+                        
+                        // Calculo Proporcional: 
+                        // Centro (150) +/- Error. (Ganancia 1:1)
+                        // Ej: Si hay 50cm mas a la derecha -> Angle = 200 (se clamp a 177)
+                        // Ej: Si hay 50cm mas a la izquierda -> Angle = 100 (se clamp a 132)
+                        int32_t raw_angle = 150 + error;
+                        
+                        // Clamp
+                        if (raw_angle > SERVO_MAX) raw_angle = SERVO_MAX;
+                        if (raw_angle < SERVO_MIN) raw_angle = SERVO_MIN;
+                        
+                        avoidTurnAngle = (uint8_t)raw_angle;
+                        printf("SmartTurn: L=%d R=%d Err=%d -> Ang=%d\r\n", score_left, score_right, error, avoidTurnAngle);
+                    }
+                    break;
+                    
+                case AVOID_TURNING:
+                    // Stop mientras las ruedas giran al angulo calculado
+                    target_pwm_signed = 0; 
+                    if (avoid_timer++ > 100) { // 500ms
+                        avoidState = AVOID_FORWARDING;
+                        avoid_timer = 0;
+                    }
+                    break;
+                    
+                case AVOID_FORWARDING:
+                    // Avanzar Esquivando
+                    target_pwm_signed = 150;
+                    
+                    // --- SEGURIDAD RECURSIVA ---
+                    // Si mientras esquivamos nos encontramos OTRA pared (<20cm)
+                    if (min_dist < 20) {
+                         // ABORTAR y REINICIAR CICLO
+                         printf("RECURSIVE ABORT! Wall Hit.\r\n");
+                         avoidState = AVOID_REVERSING; // Volver a atras
+                         avoid_timer = 0;
+                         target_pwm_signed = 0;
+                         // Snapshot nuevo
+                         old_d1 = d1; old_d2 = d2; old_d3 = d3;
+                         break; // Salir del switch
+                    }
+
+                    if (avoid_timer++ > MANEUVER_TICKS) {
+                        avoidState = AVOID_IDLE; // Devolver Control
+                        avoid_timer = 0;
+                    }
+                    break;
             }
         }
         
@@ -608,9 +711,7 @@ void TaskMotors(void* taskParm) {
     }
 }
 // --- SERVO LIMITS ---
-#define SERVO_CENTER   150
-#define SERVO_MIN      132 // 150 - 30
-#define SERVO_MAX      177 // 150 + 30 (Limite fisico software)
+// (Definidos globalmente arriba)
 
 void TaskServo(void* taskParm) {
     // Restauramos barrido
@@ -642,32 +743,24 @@ void TaskServo(void* taskParm) {
         
         // --- OVERRIDES DE SEGURIDAD (MODO AVOIDANCE) ---
         if (currentMode == MODE_AVOIDANCE) {
-            uint32_t d1 = (dist1_cm == 0) ? 999 : dist1_cm; 
-            uint32_t d2 = (dist2_cm == 0) ? 999 : dist2_cm;
-            uint32_t d3 = (dist3_cm == 0) ? 999 : dist3_cm;
-            uint32_t min_dist = d1;
-            if (d2 < min_dist) min_dist = d2;
-            if (d3 < min_dist) min_dist = d3;
-
-            if (min_dist < AVOID_DIST_CM) {
-                // Volantazo hacia el lado con mas despeje
-                // Asumimos: S1=Izquierda, S2=Centro, S3=Derecha
-                // Logica simple: Comparar Izq (d1) vs Der (d3)
-                // Si d1 (Izq) > d3 (Der) -> Girar Izquierda (Angulo MENOR a 150? Depende servo)
-                
-                // NOTA: En servos RC standard:
-                // 150 = Centro
-                // 120 = Izquierda (Min) -> Si el brazo apunta izq con pulso corto
-                // 180 = Derecha (Max) -> Si el brazo apunta der con pulso largo
-                // *Verificar orientacion fisica*. Asumiremos esta convencion.
-                
-                if (d1 > d3) {
-                    // Mas lugar a la izquierda -> Girar Izquierda (MIN)
-                    targetAngle = SERVO_MIN; 
-                } else {
-                    // Mas lugar a la derecha (o igual) -> Girar Derecha (MAX)
-                    targetAngle = SERVO_MAX;
-                }
+            
+            // Comportamiento segun Estado de Maniobra
+            switch(avoidState) {
+                case AVOID_IDLE:
+                    // Control Manual Normal (Joystick)
+                    // ... targetAngle ya calculado arriba
+                    break;
+                    
+                case AVOID_REVERSING:
+                    // Al retroceder, Enderezar ruedas para ir recto atras
+                    targetAngle = SERVO_CENTER; 
+                    break;
+                    
+                case AVOID_TURNING:
+                case AVOID_FORWARDING:
+                    // Girar al angulo CALCULADO DINAMICAMENTE
+                    targetAngle = avoidTurnAngle;
+                    break;
             }
         }
 
