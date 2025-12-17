@@ -638,6 +638,7 @@ void TaskMotors(void* taskParm) {
                         sendFeedback(FB_CMD_RUMBLE, 30, 200, 0); // 300ms, Fuerza Alta
                         
                         // INICIAR MANIOBRA
+                        // printf("[AVOID] Triggered!\r\n");
                         avoidState = AVOID_REVERSING;
                         avoid_timer = 0;
                         current_pwm_signed = 0; // Stop inicial
@@ -666,10 +667,6 @@ void TaskMotors(void* taskParm) {
                         // Diferencia: Positivo = Mas espacio Dcha, Negativo = Mas espacio Izq
                         int32_t error = score_right - score_left;
                         
-                        // Calculo Proporcional: 
-                        // Centro (150) +/- Error. (Ganancia 1:1)
-                        // Ej: Si hay 50cm mas a la derecha -> Angle = 200 (se clamp a 177)
-                        // Ej: Si hay 50cm mas a la izquierda -> Angle = 100 (se clamp a 132)
                         int32_t raw_angle = 150 + error;
                         
                         // Clamp
@@ -677,7 +674,7 @@ void TaskMotors(void* taskParm) {
                         if (raw_angle < SERVO_MIN) raw_angle = SERVO_MIN;
                         
                         avoidTurnAngle = (uint8_t)raw_angle;
-                        printf("SmartTurn: L=%d R=%d Err=%d -> Ang=%d\r\n", score_left, score_right, error, avoidTurnAngle);
+                        // printf("SmartTurn: %d\r\n", avoidTurnAngle);
                     }
                     break;
                     
@@ -695,19 +692,20 @@ void TaskMotors(void* taskParm) {
                     target_pwm_signed = 150;
                     
                     // --- SEGURIDAD RECURSIVA ---
-                    // Si mientras esquivamos nos encontramos OTRA pared (<20cm)
-                    if (min_dist < 20) {
-                         // ABORTAR y REINICIAR CICLO
-                         // HAPTIC FEEDBACK: Vibracion Fuerte!
-                         sendFeedback(FB_CMD_RUMBLE, 50, 255, 0); // 500ms, Fuerza Max
-                         
-                         printf("RECURSIVE ABORT! Wall Hit.\r\n");
-                         avoidState = AVOID_REVERSING; // Volver a atras
-                         avoid_timer = 0;
-                         target_pwm_signed = 0;
-                         // Snapshot nuevo
-                         old_d1 = d1; old_d2 = d2; old_d3 = d3;
-                         break; // Salir del switch
+                    // "Tiempo de Gracia": Ignorar sensores los primeros 500ms (100 ticks)
+                    if (avoid_timer > 100) { 
+                        // Si mientras esquivamos nos encontramos OTRA pared (<20cm)
+                        if (min_dist < 20) {
+                             // ABORTAR y REINICIAR CICLO
+                             sendFeedback(FB_CMD_RUMBLE, 50, 255, 0); 
+                             
+                             // printf("[AVOID] ABORT\r\n");
+                             avoidState = AVOID_REVERSING; // Volver a atras
+                             avoid_timer = 0;
+                             target_pwm_signed = 0;
+                             old_d1 = d1; old_d2 = d2; old_d3 = d3;
+                             break; 
+                        }
                     }
 
                     if (avoid_timer++ > MANEUVER_TICKS) {
