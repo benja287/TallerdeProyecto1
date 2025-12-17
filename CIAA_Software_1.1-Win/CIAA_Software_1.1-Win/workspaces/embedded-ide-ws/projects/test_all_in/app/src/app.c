@@ -89,8 +89,9 @@ const char* MODE_NAMES[] = {"MANUAL", "SAFETY STOP", "AVOIDANCE"};
 
 // --- CONSTANTES DE COMANDO Y SEGURIDAD ---
 #define BTN_TRIANGLE_MASK 16 // Bit 4 (0x10) - Tipico en Bluepad para Triangulo
-#define STOP_DIST_CM      10 // Distancia critica para frenado (Fixed)
+#define STOP_DIST_CM      20 // Distancia critica para frenado (Safe)
 #define AVOID_DIST_CM     50 // Distancia para inicio de esquiva
+
 #define AVOID_SPEED_PWM   120 // PWM moderado para maniobra de esquiva
 
 
@@ -344,31 +345,38 @@ void TaskSensors(void* taskParm) {
         portENTER_CRITICAL();
         trigger_sensor(TRIG1_GPIO_P, TRIG1_GPIO_B);
         portEXIT_CRITICAL();
-        // Esperar max 30ms (eco maximo seguro + margen)
-        ulTaskNotifyTake(pdTRUE, 30 / portTICK_RATE_MS);
+        // Esperar max 12ms (Rango util ~2 metros. 60us*200cm = 12ms)
+        // Esto acelera drasticamente el loop cuando no hay paredes cerca.
+        ulTaskNotifyTake(pdTRUE, 12 / portTICK_RATE_MS);
         
-        vTaskDelay(15 / portTICK_RATE_MS); // Pequeño delay entre sensores
+        vTaskDelay(2 / portTICK_RATE_MS); // Minimo delay inter-sensor
 
         // Sensor 2
         portENTER_CRITICAL();
         trigger_sensor(TRIG2_GPIO_P, TRIG2_GPIO_B);
         portEXIT_CRITICAL();
-        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
+        ulTaskNotifyTake(pdTRUE, 12 / portTICK_RATE_MS);
         
-        vTaskDelay(15 / portTICK_RATE_MS);
+        vTaskDelay(2 / portTICK_RATE_MS); 
 
         // Sensor 3
         portENTER_CRITICAL();
         trigger_sensor(TRIG3_GPIO_P, TRIG3_GPIO_B);
         portEXIT_CRITICAL();
-        ulTaskNotifyTake(pdTRUE, 35 / portTICK_RATE_MS);
+        ulTaskNotifyTake(pdTRUE, 12 / portTICK_RATE_MS);
 
-        // Loguear
-        printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        // Loguear (Throttled)
+        static int log_cnt = 0;
+        if (log_cnt++ > 15) { // Cada ~200-300ms
+             log_cnt = 0;
+             printf("S1: %dcm, S2: %dcm, S3: %dcm\r\n", dist1_cm, dist2_cm, dist3_cm);
+        }
         
-        // Retardo para la siguiente vuelta - Aumentado a 50Hz aprox para mayor velocidad
-        vTaskDelay(50 / portTICK_RATE_MS);
+        // Retardo para la siguiente vuelta - VOLOCIDAD EXTREMA
+        vTaskDelay(5 / portTICK_RATE_MS);
     }
+
+
 }
 
 // ==============================================================================
@@ -589,13 +597,13 @@ void TaskMotors(void* taskParm) {
             printf("Motors: Tgt=%d, Curr=%d\r\n", target_pwm_signed, current_pwm_signed);
         }
         
-        vTaskDelay(20 / portTICK_RATE_MS); // 50Hz control loop
+        vTaskDelay(5 / portTICK_RATE_MS); // 200Hz control loop (Ultra Fast)
     }
 }
 // --- SERVO LIMITS ---
 #define SERVO_CENTER   150
-#define SERVO_MIN      122 // 150 - 30
-#define SERVO_MAX      176 // 150 + 30 (Limite fisico software)
+#define SERVO_MIN      132 // 150 - 30
+#define SERVO_MAX      177 // 150 + 30 (Limite fisico software)
 
 void TaskServo(void* taskParm) {
     // Restauramos barrido

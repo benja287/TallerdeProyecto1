@@ -14719,7 +14719,7 @@ END GROUP
  *(.rodata.$Flash2*)
  *(.rodata.$MFlashB512*)
 
-.text           0x1a000000     0x6940
+.text           0x1a000000     0x6950
  FILL mask 0xff
                 0x1a000000                __vectors_start__ = ABSOLUTE (.)
  *(.isr_vector)
@@ -14728,25 +14728,25 @@ END GROUP
                 0x1a000114                . = ALIGN (0x4)
                 0x1a000114                __section_table_start = .
                 0x1a000114                __data_section_table = .
-                0x1a000114        0x4 LONG 0x1a006948 LOADADDR (.data)
+                0x1a000114        0x4 LONG 0x1a006958 LOADADDR (.data)
                 0x1a000118        0x4 LONG 0x10000000 ADDR (.data)
                 0x1a00011c        0x4 LONG 0x108 SIZEOF (.data)
-                0x1a000120        0x4 LONG 0x1a006948 LOADADDR (.data_RAM2)
+                0x1a000120        0x4 LONG 0x1a006958 LOADADDR (.data_RAM2)
                 0x1a000124        0x4 LONG 0x10080000 ADDR (.data_RAM2)
                 0x1a000128        0x4 LONG 0x0 SIZEOF (.data_RAM2)
-                0x1a00012c        0x4 LONG 0x1a006948 LOADADDR (.data_RAM3)
+                0x1a00012c        0x4 LONG 0x1a006958 LOADADDR (.data_RAM3)
                 0x1a000130        0x4 LONG 0x20000000 ADDR (.data_RAM3)
                 0x1a000134        0x4 LONG 0x0 SIZEOF (.data_RAM3)
-                0x1a000138        0x4 LONG 0x1a006948 LOADADDR (.data_RAM4)
+                0x1a000138        0x4 LONG 0x1a006958 LOADADDR (.data_RAM4)
                 0x1a00013c        0x4 LONG 0x20008000 ADDR (.data_RAM4)
                 0x1a000140        0x4 LONG 0x0 SIZEOF (.data_RAM4)
-                0x1a000144        0x4 LONG 0x1a006948 LOADADDR (.data_RAM5)
+                0x1a000144        0x4 LONG 0x1a006958 LOADADDR (.data_RAM5)
                 0x1a000148        0x4 LONG 0x2000c000 ADDR (.data_RAM5)
                 0x1a00014c        0x4 LONG 0x0 SIZEOF (.data_RAM5)
                 0x1a000150                __data_section_table_end = .
                 0x1a000150                __bss_section_table = .
                 0x1a000150        0x4 LONG 0x10000108 ADDR (.bss)
-                0x1a000154        0x4 LONG 0x3388 SIZEOF (.bss)
+                0x1a000154        0x4 LONG 0x3390 SIZEOF (.bss)
                 0x1a000158        0x4 LONG 0x10080000 ADDR (.bss_RAM2)
                 0x1a00015c        0x4 LONG 0x0 SIZEOF (.bss_RAM2)
                 0x1a000160        0x4 LONG 0x20000000 ADDR (.bss_RAM3)
@@ -14845,863 +14845,862 @@ END GROUP
                 0x1a00097c                trigger_sensor
  *fill*         0x1a0009a6        0x2 ff
  .text.TaskSensors
-                0x1a0009a8       0x90 app/out/app/src/app.o
+                0x1a0009a8       0xa8 app/out/app/src/app.o
                 0x1a0009a8                TaskSensors
  .text.GPIO0_IRQHandler
-                0x1a000a38       0x88 app/out/app/src/app.o
-                0x1a000a38                GPIO0_IRQHandler
+                0x1a000a50       0x88 app/out/app/src/app.o
+                0x1a000a50                GPIO0_IRQHandler
  .text.GPIO1_IRQHandler
-                0x1a000ac0       0x88 app/out/app/src/app.o
-                0x1a000ac0                GPIO1_IRQHandler
+                0x1a000ad8       0x88 app/out/app/src/app.o
+                0x1a000ad8                GPIO1_IRQHandler
  .text.GPIO2_IRQHandler
-                0x1a000b48       0x88 app/out/app/src/app.o
-                0x1a000b48                GPIO2_IRQHandler
+                0x1a000b60       0x88 app/out/app/src/app.o
+                0x1a000b60                GPIO2_IRQHandler
  .text.set_servo_angle
-                0x1a000bd0       0x10 app/out/app/src/app.o
-                0x1a000bd0                set_servo_angle
+                0x1a000be8       0x10 app/out/app/src/app.o
+                0x1a000be8                set_servo_angle
  .text.TaskServo
-                0x1a000be0       0xbc app/out/app/src/app.o
-                0x1a000be0                TaskServo
- .text.main     0x1a000c9c      0x118 app/out/app/src/app.o
-                0x1a000c9c                main
+                0x1a000bf8       0xbc app/out/app/src/app.o
+                0x1a000bf8                TaskServo
+ .text.main     0x1a000cb4      0x118 app/out/app/src/app.o
+                0x1a000cb4                main
  .text.pvPortMalloc
-                0x1a000db4       0x60 app/out/libs/freertos/MemMang/heap_1.o
-                0x1a000db4                pvPortMalloc
+                0x1a000dcc       0x60 app/out/libs/freertos/MemMang/heap_1.o
+                0x1a000dcc                pvPortMalloc
  .text.vPortFree
-                0x1a000e14        0x2 app/out/libs/freertos/MemMang/heap_1.o
-                0x1a000e14                vPortFree
- *fill*         0x1a000e16        0x2 ff
+                0x1a000e2c        0x2 app/out/libs/freertos/MemMang/heap_1.o
+                0x1a000e2c                vPortFree
+ *fill*         0x1a000e2e        0x2 ff
  .text.prvGetNextExpireTime
-                0x1a000e18       0x20 app/out/libs/freertos/source/timers.o
+                0x1a000e30       0x20 app/out/libs/freertos/source/timers.o
  .text.prvInsertTimerInActiveList
-                0x1a000e38       0x48 app/out/libs/freertos/source/timers.o
+                0x1a000e50       0x48 app/out/libs/freertos/source/timers.o
  .text.prvCheckForValidListAndQueue
-                0x1a000e80       0x70 app/out/libs/freertos/source/timers.o
+                0x1a000e98       0x70 app/out/libs/freertos/source/timers.o
  .text.prvInitialiseNewTimer
-                0x1a000ef0       0x2c app/out/libs/freertos/source/timers.o
+                0x1a000f08       0x2c app/out/libs/freertos/source/timers.o
  .text.xTimerCreateTimerTask
-                0x1a000f1c       0x5c app/out/libs/freertos/source/timers.o
-                0x1a000f1c                xTimerCreateTimerTask
+                0x1a000f34       0x5c app/out/libs/freertos/source/timers.o
+                0x1a000f34                xTimerCreateTimerTask
  .text.xTimerCreateStatic
-                0x1a000f78       0x1e app/out/libs/freertos/source/timers.o
-                0x1a000f78                xTimerCreateStatic
- *fill*         0x1a000f96        0x2 ff
+                0x1a000f90       0x1e app/out/libs/freertos/source/timers.o
+                0x1a000f90                xTimerCreateStatic
+ *fill*         0x1a000fae        0x2 ff
  .text.xTimerGenericCommand
-                0x1a000f98       0x58 app/out/libs/freertos/source/timers.o
-                0x1a000f98                xTimerGenericCommand
+                0x1a000fb0       0x58 app/out/libs/freertos/source/timers.o
+                0x1a000fb0                xTimerGenericCommand
  .text.prvSwitchTimerLists
-                0x1a000ff0       0x64 app/out/libs/freertos/source/timers.o
+                0x1a001008       0x64 app/out/libs/freertos/source/timers.o
  .text.prvSampleTimeNow
-                0x1a001054       0x2c app/out/libs/freertos/source/timers.o
+                0x1a00106c       0x2c app/out/libs/freertos/source/timers.o
  .text.prvProcessExpiredTimer
-                0x1a001080       0x4c app/out/libs/freertos/source/timers.o
+                0x1a001098       0x4c app/out/libs/freertos/source/timers.o
  .text.prvProcessTimerOrBlockTask
-                0x1a0010cc       0x74 app/out/libs/freertos/source/timers.o
+                0x1a0010e4       0x74 app/out/libs/freertos/source/timers.o
  .text.prvProcessReceivedCommands
-                0x1a001140       0xc0 app/out/libs/freertos/source/timers.o
+                0x1a001158       0xc0 app/out/libs/freertos/source/timers.o
  .text.prvTimerTask
-                0x1a001200       0x16 app/out/libs/freertos/source/timers.o
- *fill*         0x1a001216        0x2 ff
+                0x1a001218       0x16 app/out/libs/freertos/source/timers.o
+ *fill*         0x1a00122e        0x2 ff
  .text.prvResetNextTaskUnblockTime
-                0x1a001218       0x2c app/out/libs/freertos/source/tasks.o
+                0x1a001230       0x2c app/out/libs/freertos/source/tasks.o
  .text.prvInitialiseNewTask
-                0x1a001244       0x8e app/out/libs/freertos/source/tasks.o
- *fill*         0x1a0012d2        0x2 ff
+                0x1a00125c       0x8e app/out/libs/freertos/source/tasks.o
+ *fill*         0x1a0012ea        0x2 ff
  .text.prvInitialiseTaskLists
-                0x1a0012d4       0x68 app/out/libs/freertos/source/tasks.o
+                0x1a0012ec       0x68 app/out/libs/freertos/source/tasks.o
  .text.prvAddNewTaskToReadyList
-                0x1a00133c       0xac app/out/libs/freertos/source/tasks.o
+                0x1a001354       0xac app/out/libs/freertos/source/tasks.o
  .text.prvDeleteTCB
-                0x1a0013e8       0x24 app/out/libs/freertos/source/tasks.o
+                0x1a001400       0x24 app/out/libs/freertos/source/tasks.o
  .text.prvCheckTasksWaitingTermination
-                0x1a00140c       0x4c app/out/libs/freertos/source/tasks.o
+                0x1a001424       0x4c app/out/libs/freertos/source/tasks.o
  .text.prvIdleTask
-                0x1a001458       0x28 app/out/libs/freertos/source/tasks.o
+                0x1a001470       0x28 app/out/libs/freertos/source/tasks.o
  .text.prvAddCurrentTaskToDelayedList
-                0x1a001480       0x98 app/out/libs/freertos/source/tasks.o
+                0x1a001498       0x98 app/out/libs/freertos/source/tasks.o
  .text.xTaskCreateStatic
-                0x1a001518       0x38 app/out/libs/freertos/source/tasks.o
-                0x1a001518                xTaskCreateStatic
+                0x1a001530       0x38 app/out/libs/freertos/source/tasks.o
+                0x1a001530                xTaskCreateStatic
  .text.xTaskCreate
-                0x1a001550       0x66 app/out/libs/freertos/source/tasks.o
-                0x1a001550                xTaskCreate
- *fill*         0x1a0015b6        0x2 ff
+                0x1a001568       0x66 app/out/libs/freertos/source/tasks.o
+                0x1a001568                xTaskCreate
+ *fill*         0x1a0015ce        0x2 ff
  .text.vTaskStartScheduler
-                0x1a0015b8       0x7c app/out/libs/freertos/source/tasks.o
-                0x1a0015b8                vTaskStartScheduler
+                0x1a0015d0       0x7c app/out/libs/freertos/source/tasks.o
+                0x1a0015d0                vTaskStartScheduler
  .text.vTaskSuspendAll
-                0x1a001634       0x10 app/out/libs/freertos/source/tasks.o
-                0x1a001634                vTaskSuspendAll
+                0x1a00164c       0x10 app/out/libs/freertos/source/tasks.o
+                0x1a00164c                vTaskSuspendAll
  .text.xTaskGetTickCount
-                0x1a001644        0xc app/out/libs/freertos/source/tasks.o
-                0x1a001644                xTaskGetTickCount
+                0x1a00165c        0xc app/out/libs/freertos/source/tasks.o
+                0x1a00165c                xTaskGetTickCount
  .text.xTaskIncrementTick
-                0x1a001650      0x100 app/out/libs/freertos/source/tasks.o
-                0x1a001650                xTaskIncrementTick
+                0x1a001668      0x100 app/out/libs/freertos/source/tasks.o
+                0x1a001668                xTaskIncrementTick
  .text.xTaskResumeAll
-                0x1a001750       0xe4 app/out/libs/freertos/source/tasks.o
-                0x1a001750                xTaskResumeAll
+                0x1a001768       0xe4 app/out/libs/freertos/source/tasks.o
+                0x1a001768                xTaskResumeAll
  .text.vTaskDelay
-                0x1a001834       0x34 app/out/libs/freertos/source/tasks.o
-                0x1a001834                vTaskDelay
+                0x1a00184c       0x34 app/out/libs/freertos/source/tasks.o
+                0x1a00184c                vTaskDelay
  .text.vTaskSwitchContext
-                0x1a001868       0x7c app/out/libs/freertos/source/tasks.o
-                0x1a001868                vTaskSwitchContext
+                0x1a001880       0x7c app/out/libs/freertos/source/tasks.o
+                0x1a001880                vTaskSwitchContext
  .text.vTaskPlaceOnEventList
-                0x1a0018e4       0x1c app/out/libs/freertos/source/tasks.o
-                0x1a0018e4                vTaskPlaceOnEventList
+                0x1a0018fc       0x1c app/out/libs/freertos/source/tasks.o
+                0x1a0018fc                vTaskPlaceOnEventList
  .text.vTaskPlaceOnEventListRestricted
-                0x1a001900       0x24 app/out/libs/freertos/source/tasks.o
-                0x1a001900                vTaskPlaceOnEventListRestricted
+                0x1a001918       0x24 app/out/libs/freertos/source/tasks.o
+                0x1a001918                vTaskPlaceOnEventListRestricted
  .text.xTaskRemoveFromEventList
-                0x1a001924       0x78 app/out/libs/freertos/source/tasks.o
-                0x1a001924                xTaskRemoveFromEventList
+                0x1a00193c       0x78 app/out/libs/freertos/source/tasks.o
+                0x1a00193c                xTaskRemoveFromEventList
  .text.vTaskInternalSetTimeOutState
-                0x1a00199c       0x18 app/out/libs/freertos/source/tasks.o
-                0x1a00199c                vTaskInternalSetTimeOutState
+                0x1a0019b4       0x18 app/out/libs/freertos/source/tasks.o
+                0x1a0019b4                vTaskInternalSetTimeOutState
  .text.xTaskCheckForTimeOut
-                0x1a0019b4       0x5c app/out/libs/freertos/source/tasks.o
-                0x1a0019b4                xTaskCheckForTimeOut
+                0x1a0019cc       0x5c app/out/libs/freertos/source/tasks.o
+                0x1a0019cc                xTaskCheckForTimeOut
  .text.vTaskMissedYield
-                0x1a001a10        0xc app/out/libs/freertos/source/tasks.o
-                0x1a001a10                vTaskMissedYield
+                0x1a001a28        0xc app/out/libs/freertos/source/tasks.o
+                0x1a001a28                vTaskMissedYield
  .text.xTaskGetCurrentTaskHandle
-                0x1a001a1c        0xc app/out/libs/freertos/source/tasks.o
-                0x1a001a1c                xTaskGetCurrentTaskHandle
+                0x1a001a34        0xc app/out/libs/freertos/source/tasks.o
+                0x1a001a34                xTaskGetCurrentTaskHandle
  .text.xTaskGetSchedulerState
-                0x1a001a28       0x20 app/out/libs/freertos/source/tasks.o
-                0x1a001a28                xTaskGetSchedulerState
+                0x1a001a40       0x20 app/out/libs/freertos/source/tasks.o
+                0x1a001a40                xTaskGetSchedulerState
  .text.xTaskPriorityDisinherit
-                0x1a001a48       0x80 app/out/libs/freertos/source/tasks.o
-                0x1a001a48                xTaskPriorityDisinherit
+                0x1a001a60       0x80 app/out/libs/freertos/source/tasks.o
+                0x1a001a60                xTaskPriorityDisinherit
  .text.ulTaskNotifyTake
-                0x1a001ac8       0x78 app/out/libs/freertos/source/tasks.o
-                0x1a001ac8                ulTaskNotifyTake
+                0x1a001ae0       0x78 app/out/libs/freertos/source/tasks.o
+                0x1a001ae0                ulTaskNotifyTake
  .text.vTaskNotifyGiveFromISR
-                0x1a001b40       0xa4 app/out/libs/freertos/source/tasks.o
-                0x1a001b40                vTaskNotifyGiveFromISR
+                0x1a001b58       0xa4 app/out/libs/freertos/source/tasks.o
+                0x1a001b58                vTaskNotifyGiveFromISR
  .text.vApplicationGetIdleTaskMemory
-                0x1a001be4       0x18 app/out/libs/freertos/source/static_provider.o
-                0x1a001be4                vApplicationGetIdleTaskMemory
- .text.vApplicationGetTimerTaskMemory
                 0x1a001bfc       0x18 app/out/libs/freertos/source/static_provider.o
-                0x1a001bfc                vApplicationGetTimerTaskMemory
+                0x1a001bfc                vApplicationGetIdleTaskMemory
+ .text.vApplicationGetTimerTaskMemory
+                0x1a001c14       0x18 app/out/libs/freertos/source/static_provider.o
+                0x1a001c14                vApplicationGetTimerTaskMemory
  .text.vListInitialise
-                0x1a001c14       0x16 app/out/libs/freertos/source/list.o
-                0x1a001c14                vListInitialise
+                0x1a001c2c       0x16 app/out/libs/freertos/source/list.o
+                0x1a001c2c                vListInitialise
  .text.vListInitialiseItem
-                0x1a001c2a        0x6 app/out/libs/freertos/source/list.o
-                0x1a001c2a                vListInitialiseItem
+                0x1a001c42        0x6 app/out/libs/freertos/source/list.o
+                0x1a001c42                vListInitialiseItem
  .text.vListInsertEnd
-                0x1a001c30       0x16 app/out/libs/freertos/source/list.o
-                0x1a001c30                vListInsertEnd
+                0x1a001c48       0x16 app/out/libs/freertos/source/list.o
+                0x1a001c48                vListInsertEnd
  .text.vListInsert
-                0x1a001c46       0x34 app/out/libs/freertos/source/list.o
-                0x1a001c46                vListInsert
+                0x1a001c5e       0x34 app/out/libs/freertos/source/list.o
+                0x1a001c5e                vListInsert
  .text.uxListRemove
-                0x1a001c7a       0x26 app/out/libs/freertos/source/list.o
-                0x1a001c7a                uxListRemove
+                0x1a001c92       0x26 app/out/libs/freertos/source/list.o
+                0x1a001c92                uxListRemove
  .text.prvIsQueueFull
-                0x1a001ca0       0x1e app/out/libs/freertos/source/queue.o
+                0x1a001cb8       0x1e app/out/libs/freertos/source/queue.o
  .text.prvIsQueueEmpty
-                0x1a001cbe       0x1a app/out/libs/freertos/source/queue.o
+                0x1a001cd6       0x1a app/out/libs/freertos/source/queue.o
  .text.prvCopyDataToQueue
-                0x1a001cd8       0x76 app/out/libs/freertos/source/queue.o
+                0x1a001cf0       0x76 app/out/libs/freertos/source/queue.o
  .text.prvCopyDataFromQueue
-                0x1a001d4e       0x24 app/out/libs/freertos/source/queue.o
+                0x1a001d66       0x24 app/out/libs/freertos/source/queue.o
  .text.prvUnlockQueue
-                0x1a001d72       0x6e app/out/libs/freertos/source/queue.o
+                0x1a001d8a       0x6e app/out/libs/freertos/source/queue.o
  .text.xQueueGenericReset
-                0x1a001de0       0x70 app/out/libs/freertos/source/queue.o
-                0x1a001de0                xQueueGenericReset
+                0x1a001df8       0x70 app/out/libs/freertos/source/queue.o
+                0x1a001df8                xQueueGenericReset
  .text.prvInitialiseNewQueue
-                0x1a001e50       0x22 app/out/libs/freertos/source/queue.o
+                0x1a001e68       0x22 app/out/libs/freertos/source/queue.o
  .text.xQueueGenericCreateStatic
-                0x1a001e72       0x1e app/out/libs/freertos/source/queue.o
-                0x1a001e72                xQueueGenericCreateStatic
+                0x1a001e8a       0x1e app/out/libs/freertos/source/queue.o
+                0x1a001e8a                xQueueGenericCreateStatic
  .text.xQueueGenericSend
-                0x1a001e90      0x118 app/out/libs/freertos/source/queue.o
-                0x1a001e90                xQueueGenericSend
+                0x1a001ea8      0x118 app/out/libs/freertos/source/queue.o
+                0x1a001ea8                xQueueGenericSend
  .text.xQueueGenericSendFromISR
-                0x1a001fa8       0x6e app/out/libs/freertos/source/queue.o
-                0x1a001fa8                xQueueGenericSendFromISR
- *fill*         0x1a002016        0x2 ff
+                0x1a001fc0       0x6e app/out/libs/freertos/source/queue.o
+                0x1a001fc0                xQueueGenericSendFromISR
+ *fill*         0x1a00202e        0x2 ff
  .text.xQueueReceive
-                0x1a002018      0x10c app/out/libs/freertos/source/queue.o
-                0x1a002018                xQueueReceive
+                0x1a002030      0x10c app/out/libs/freertos/source/queue.o
+                0x1a002030                xQueueReceive
  .text.vQueueAddToRegistry
-                0x1a002124       0x28 app/out/libs/freertos/source/queue.o
-                0x1a002124                vQueueAddToRegistry
+                0x1a00213c       0x28 app/out/libs/freertos/source/queue.o
+                0x1a00213c                vQueueAddToRegistry
  .text.vQueueWaitForMessageRestricted
-                0x1a00214c       0x52 app/out/libs/freertos/source/queue.o
-                0x1a00214c                vQueueWaitForMessageRestricted
+                0x1a002164       0x52 app/out/libs/freertos/source/queue.o
+                0x1a002164                vQueueWaitForMessageRestricted
  .text.prvTaskExitError
-                0x1a00219e       0x20 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
- *fill*         0x1a0021be        0x2 ff
+                0x1a0021b6       0x20 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+ *fill*         0x1a0021d6        0x2 ff
  .text.prvPortStartFirstTask
-                0x1a0021c0       0x28 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a0021d8       0x28 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
  .text.vPortEnableVFP
-                0x1a0021e8       0x14 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002200       0x14 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
  .text.pxPortInitialiseStack
-                0x1a0021fc       0x2c app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a0021fc                pxPortInitialiseStack
- *fill*         0x1a002228        0x8 ff
+                0x1a002214       0x2c app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002214                pxPortInitialiseStack
  .text.SVC_Handler
-                0x1a002230       0x24 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a002230                SVC_Handler
+                0x1a002240       0x24 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002240                SVC_Handler
  .text.vPortEnterCritical
-                0x1a002254       0x20 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a002254                vPortEnterCritical
+                0x1a002264       0x20 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002264                vPortEnterCritical
  .text.vPortExitCritical
-                0x1a002274       0x14 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a002274                vPortExitCritical
- *fill*         0x1a002288        0x8 ff
+                0x1a002284       0x14 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002284                vPortExitCritical
+ *fill*         0x1a002298        0x8 ff
  .text.PendSV_Handler
-                0x1a002290       0x64 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a002290                PendSV_Handler
+                0x1a0022a0       0x64 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a0022a0                PendSV_Handler
  .text.SysTick_Handler
-                0x1a0022f4       0x2c app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a0022f4                SysTick_Handler
+                0x1a002304       0x2c app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002304                SysTick_Handler
  .text.vPortSetupTimerInterrupt
-                0x1a002320       0x38 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a002320                vPortSetupTimerInterrupt
+                0x1a002330       0x38 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002330                vPortSetupTimerInterrupt
  .text.xPortStartScheduler
-                0x1a002358       0x48 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
-                0x1a002358                xPortStartScheduler
+                0x1a002368       0x48 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+                0x1a002368                xPortStartScheduler
  .text.cyclesCounterInit
-                0x1a0023a0       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
-                0x1a0023a0                cyclesCounterInit
+                0x1a0023b0       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
+                0x1a0023b0                cyclesCounterInit
  .text.cyclesCounterRead
-                0x1a0023e0        0xc app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
-                0x1a0023e0                cyclesCounterRead
+                0x1a0023f0        0xc app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
+                0x1a0023f0                cyclesCounterRead
  .text.cyclesCounterToUs
-                0x1a0023ec       0x2c app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
-                0x1a0023ec                cyclesCounterToUs
+                0x1a0023fc       0x2c app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
+                0x1a0023fc                cyclesCounterToUs
  .text.gpioObtainPinInit
-                0x1a002418       0x34 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+                0x1a002428       0x34 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
  .text.gpioInit
-                0x1a00244c      0x194 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
-                0x1a00244c                gpioInit
+                0x1a00245c      0x194 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+                0x1a00245c                gpioInit
  .text.gpioWrite
-                0x1a0025e0       0x56 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
-                0x1a0025e0                gpioWrite
+                0x1a0025f0       0x56 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+                0x1a0025f0                gpioWrite
  .text.gpioRead
-                0x1a002636       0x54 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
-                0x1a002636                gpioRead
+                0x1a002646       0x54 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+                0x1a002646                gpioRead
  .text.gpioToggle
-                0x1a00268a       0x16 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
-                0x1a00268a                gpioToggle
+                0x1a00269a       0x16 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+                0x1a00269a                gpioToggle
  .text.Sct_Init
-                0x1a0026a0       0x24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
-                0x1a0026a0                Sct_Init
+                0x1a0026b0       0x24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+                0x1a0026b0                Sct_Init
  .text.Sct_Uint8ToTicks
-                0x1a0026c4       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
-                0x1a0026c4                Sct_Uint8ToTicks
+                0x1a0026d4       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+                0x1a0026d4                Sct_Uint8ToTicks
  .text.Sct_SetDutyCycle
-                0x1a0026e0       0x18 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
-                0x1a0026e0                Sct_SetDutyCycle
+                0x1a0026f0       0x18 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+                0x1a0026f0                Sct_SetDutyCycle
  .text.Sct_EnablePwmFor
-                0x1a0026f8       0x4c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
-                0x1a0026f8                Sct_EnablePwmFor
+                0x1a002708       0x4c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+                0x1a002708                Sct_EnablePwmFor
  .text.errorOcurred
-                0x1a002744        0x2 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002754        0x2 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
  .text.doNothing
-                0x1a002746        0x2 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002756        0x2 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
  .text.Timer_Init
-                0x1a002748      0x110 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a002748                Timer_Init
+                0x1a002758      0x110 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002758                Timer_Init
  .text.Timer_microsecondsToTicks
-                0x1a002858        0x8 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a002858                Timer_microsecondsToTicks
+                0x1a002868        0x8 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002868                Timer_microsecondsToTicks
  .text.Timer_EnableCompareMatch
-                0x1a002860       0x38 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a002860                Timer_EnableCompareMatch
+                0x1a002870       0x38 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002870                Timer_EnableCompareMatch
  .text.Timer_SetCompareMatch
-                0x1a002898       0x18 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a002898                Timer_SetCompareMatch
+                0x1a0028a8       0x18 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a0028a8                Timer_SetCompareMatch
  .text.TIMER0_IRQHandler
-                0x1a0028b0       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a0028b0                TIMER0_IRQHandler
+                0x1a0028c0       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a0028c0                TIMER0_IRQHandler
  .text.TIMER1_IRQHandler
-                0x1a0028f0       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a0028f0                TIMER1_IRQHandler
+                0x1a002900       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002900                TIMER1_IRQHandler
  .text.TIMER2_IRQHandler
-                0x1a002930       0x44 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a002930                TIMER2_IRQHandler
+                0x1a002940       0x44 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002940                TIMER2_IRQHandler
  .text.TIMER3_IRQHandler
-                0x1a002974       0x44 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
-                0x1a002974                TIMER3_IRQHandler
+                0x1a002984       0x44 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a002984                TIMER3_IRQHandler
  .text.tickerCallback
-                0x1a0029b8       0x2c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
-                0x1a0029b8                tickerCallback
+                0x1a0029c8       0x2c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+                0x1a0029c8                tickerCallback
  .text.tickInit
-                0x1a0029e4       0x4c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
-                0x1a0029e4                tickInit
+                0x1a0029f4       0x4c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+                0x1a0029f4                tickInit
  .text.uartProcessIRQ
-                0x1a002a30       0xa4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002a40       0xa4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
  .text.uartInterrupt
-                0x1a002ad4       0x80 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002ad4                uartInterrupt
+                0x1a002ae4       0x80 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002ae4                uartInterrupt
  .text.uartCallbackSet
-                0x1a002b54       0x8c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002b54                uartCallbackSet
+                0x1a002b64       0x8c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002b64                uartCallbackSet
  .text.uartRxReady
-                0x1a002be0       0x18 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002be0                uartRxReady
+                0x1a002bf0       0x18 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002bf0                uartRxReady
  .text.uartRxRead
-                0x1a002bf8       0x14 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002bf8                uartRxRead
+                0x1a002c08       0x14 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002c08                uartRxRead
  .text.uartInit
-                0x1a002c0c       0x7c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002c0c                uartInit
+                0x1a002c1c       0x7c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002c1c                uartInit
  .text.uartReadByte
-                0x1a002c88       0x1e app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002c88                uartReadByte
+                0x1a002c98       0x1e app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002c98                uartReadByte
  .text.UART2_IRQHandler
-                0x1a002ca6        0xa app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002ca6                UART2_IRQHandler
+                0x1a002cb6        0xa app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002cb6                UART2_IRQHandler
  .text.UART3_IRQHandler
-                0x1a002cb0        0xa app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
-                0x1a002cb0                UART3_IRQHandler
+                0x1a002cc0        0xa app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a002cc0                UART3_IRQHandler
  .text.pwmInitTimers
-                0x1a002cba        0xc app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
- *fill*         0x1a002cc6        0x2 ff
+                0x1a002cca        0xc app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+ *fill*         0x1a002cd6        0x2 ff
  .text.pwmIsAttached
-                0x1a002cc8       0x28 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
-                0x1a002cc8                pwmIsAttached
+                0x1a002cd8       0x28 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+                0x1a002cd8                pwmIsAttached
  .text.pwmWrite
-                0x1a002cf0       0x24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
-                0x1a002cf0                pwmWrite
+                0x1a002d00       0x24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+                0x1a002d00                pwmWrite
  .text.pwmAttach
-                0x1a002d14       0x34 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+                0x1a002d24       0x34 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
  .text.pwmDetach
-                0x1a002d48       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
- .text.pwmInit  0x1a002d64       0x24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
-                0x1a002d64                pwmInit
+                0x1a002d58       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+ .text.pwmInit  0x1a002d74       0x24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+                0x1a002d74                pwmInit
  .text.USB0_IRQHandler
-                0x1a002d88       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
-                0x1a002d88                USB0_IRQHandler
+                0x1a002d98       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
+                0x1a002d98                USB0_IRQHandler
  .text.boardInit
-                0x1a002da4       0xf4 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
-                0x1a002da4                boardInit
+                0x1a002db4       0xf4 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
+                0x1a002db4                boardInit
  .text.delayInaccurateUs
-                0x1a002e98       0x5c app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
-                0x1a002e98                delayInaccurateUs
+                0x1a002ea8       0x5c app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
+                0x1a002ea8                delayInaccurateUs
  .text.Board_SetupMuxing
-                0x1a002ef4       0x38 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
-                0x1a002ef4                Board_SetupMuxing
+                0x1a002f04       0x38 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+                0x1a002f04                Board_SetupMuxing
  .text.Board_SetupClocking
-                0x1a002f2c       0x6c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
-                0x1a002f2c                Board_SetupClocking
+                0x1a002f3c       0x6c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+                0x1a002f3c                Board_SetupClocking
  .text.Board_SystemInit
-                0x1a002f98        0xc app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
-                0x1a002f98                Board_SystemInit
+                0x1a002fa8        0xc app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+                0x1a002fa8                Board_SystemInit
  .text.SystemInit
-                0x1a002fa4       0x1c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
-                0x1a002fa4                SystemInit
+                0x1a002fb4       0x1c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
+                0x1a002fb4                SystemInit
  .text._close_r
-                0x1a002fc0        0xa app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
-                0x1a002fc0                _close_r
+                0x1a002fd0        0xa app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x1a002fd0                _close_r
  .text._fstat_r
-                0x1a002fca        0xa app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
-                0x1a002fca                _fstat_r
+                0x1a002fda        0xa app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x1a002fda                _fstat_r
  .text._isatty_r
-                0x1a002fd4       0x12 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
-                0x1a002fd4                _isatty_r
+                0x1a002fe4       0x12 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x1a002fe4                _isatty_r
  .text._lseek_r
-                0x1a002fe6        0xa app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
-                0x1a002fe6                _lseek_r
- .text._read_r  0x1a002ff0       0x4a app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
-                0x1a002ff0                _read_r
- *fill*         0x1a00303a        0x2 ff
- .text._sbrk_r  0x1a00303c       0x20 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
-                0x1a00303c                _sbrk_r
+                0x1a002ff6        0xa app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x1a002ff6                _lseek_r
+ .text._read_r  0x1a003000       0x4a app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x1a003000                _read_r
+ *fill*         0x1a00304a        0x2 ff
+ .text._sbrk_r  0x1a00304c       0x20 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x1a00304c                _sbrk_r
  .text._write_r
-                0x1a00305c       0x28 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
-                0x1a00305c                _write_r
+                0x1a00306c       0x28 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x1a00306c                _write_r
  .text.Board_LED_Init
-                0x1a003084       0x44 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a003094       0x44 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .text.Board_TEC_Init
-                0x1a0030c8       0x40 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a0030d8       0x40 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .text.Board_GPIO_Init
-                0x1a003108       0x40 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a003118       0x40 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .text.Board_SPI_Init
-                0x1a003148       0x38 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a003158       0x38 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .text.Board_I2C_Init
-                0x1a003180       0x24 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a003190       0x24 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .text.Board_ADC_Init
-                0x1a0031a4       0x30 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a0031b4       0x30 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .text.Board_Debug_Init
-                0x1a0031d4       0x24 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
-                0x1a0031d4                Board_Debug_Init
+                0x1a0031e4       0x24 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a0031e4                Board_Debug_Init
  .text.Board_UARTPutChar
-                0x1a0031f8       0x14 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
-                0x1a0031f8                Board_UARTPutChar
+                0x1a003208       0x14 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a003208                Board_UARTPutChar
  .text.Board_UARTGetChar
-                0x1a00320c       0x1c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
-                0x1a00320c                Board_UARTGetChar
+                0x1a00321c       0x1c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a00321c                Board_UARTGetChar
  .text.Board_Init
-                0x1a003228       0x2c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
-                0x1a003228                Board_Init
+                0x1a003238       0x2c app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a003238                Board_Init
  .text.Chip_SSP_GetClockIndex
-                0x1a003254       0x14 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+                0x1a003264       0x14 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
  .text.Chip_SSP_GetPeriphClockIndex
-                0x1a003268       0x18 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+                0x1a003278       0x18 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
  .text.Chip_SSP_SetClockRate
-                0x1a003280       0x12 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
-                0x1a003280                Chip_SSP_SetClockRate
+                0x1a003290       0x12 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+                0x1a003290                Chip_SSP_SetClockRate
  .text.Chip_SSP_SetBitRate
-                0x1a003292       0x3e app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
-                0x1a003292                Chip_SSP_SetBitRate
+                0x1a0032a2       0x3e app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+                0x1a0032a2                Chip_SSP_SetBitRate
  .text.Chip_SSP_Init
-                0x1a0032d0       0x38 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
-                0x1a0032d0                Chip_SSP_Init
+                0x1a0032e0       0x38 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+                0x1a0032e0                Chip_SSP_Init
  .text.Chip_SCTPWM_SetOutPin
-                0x1a003308       0x44 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
-                0x1a003308                Chip_SCTPWM_SetOutPin
+                0x1a003318       0x44 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
+                0x1a003318                Chip_SCTPWM_SetOutPin
  .text.Chip_SCTPWM_SetRate
-                0x1a00334c       0x4a app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
-                0x1a00334c                Chip_SCTPWM_SetRate
- *fill*         0x1a003396        0x2 ff
+                0x1a00335c       0x4a app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
+                0x1a00335c                Chip_SCTPWM_SetRate
+ *fill*         0x1a0033a6        0x2 ff
  .text.Chip_I2C_EventHandler
-                0x1a003398       0x20 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
-                0x1a003398                Chip_I2C_EventHandler
+                0x1a0033a8       0x20 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
+                0x1a0033a8                Chip_I2C_EventHandler
  .text.Chip_I2C_Init
-                0x1a0033b8       0x24 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
-                0x1a0033b8                Chip_I2C_Init
+                0x1a0033c8       0x24 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
+                0x1a0033c8                Chip_I2C_Init
  .text.Chip_I2C_SetClockRate
-                0x1a0033dc       0x38 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
-                0x1a0033dc                Chip_I2C_SetClockRate
+                0x1a0033ec       0x38 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
+                0x1a0033ec                Chip_I2C_SetClockRate
  .text.Chip_GPIO_Init
-                0x1a003414        0x2 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
-                0x1a003414                Chip_GPIO_Init
+                0x1a003424        0x2 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
+                0x1a003424                Chip_GPIO_Init
  .text.Chip_SCT_Init
-                0x1a003416       0x10 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
-                0x1a003416                Chip_SCT_Init
- *fill*         0x1a003426        0x2 ff
- .text.fpuInit  0x1a003428       0x54 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
-                0x1a003428                fpuInit
+                0x1a003426       0x10 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
+                0x1a003426                Chip_SCT_Init
+ *fill*         0x1a003436        0x2 ff
+ .text.fpuInit  0x1a003438       0x54 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
+                0x1a003438                fpuInit
  .text.Chip_TIMER_GetClockIndex
-                0x1a00347c       0x2c app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
+                0x1a00348c       0x2c app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
  .text.Chip_TIMER_Init
-                0x1a0034a8        0xc app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
-                0x1a0034a8                Chip_TIMER_Init
+                0x1a0034b8        0xc app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
+                0x1a0034b8                Chip_TIMER_Init
  .text.Chip_TIMER_Reset
-                0x1a0034b4       0x18 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
-                0x1a0034b4                Chip_TIMER_Reset
+                0x1a0034c4       0x18 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
+                0x1a0034c4                Chip_TIMER_Reset
  .text.Chip_ADC_GetClockIndex
-                0x1a0034cc       0x14 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+                0x1a0034dc       0x14 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
  .text.getClkDiv
-                0x1a0034e0       0x32 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
- *fill*         0x1a003512        0x2 ff
+                0x1a0034f0       0x32 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+ *fill*         0x1a003522        0x2 ff
  .text.Chip_ADC_Init
-                0x1a003514       0x40 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
-                0x1a003514                Chip_ADC_Init
+                0x1a003524       0x40 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+                0x1a003524                Chip_ADC_Init
  .text.Chip_ADC_SetSampleRate
-                0x1a003554       0x32 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
-                0x1a003554                Chip_ADC_SetSampleRate
+                0x1a003564       0x32 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+                0x1a003564                Chip_ADC_SetSampleRate
  .text.Chip_ADC_SetResolution
-                0x1a003586        0xc app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
-                0x1a003586                Chip_ADC_SetResolution
- *fill*         0x1a003592        0x2 ff
+                0x1a003596        0xc app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+                0x1a003596                Chip_ADC_SetResolution
+ *fill*         0x1a0035a2        0x2 ff
  .text.Chip_SetupCoreClock
-                0x1a003594      0x158 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
-                0x1a003594                Chip_SetupCoreClock
+                0x1a0035a4      0x158 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
+                0x1a0035a4                Chip_SetupCoreClock
  .text.SystemCoreClockUpdate
-                0x1a0036ec       0x14 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
-                0x1a0036ec                SystemCoreClockUpdate
+                0x1a0036fc       0x14 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
+                0x1a0036fc                SystemCoreClockUpdate
  .text.pll_calc_divs
-                0x1a003700       0xa0 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003710       0xa0 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
  .text.pll_get_frac
-                0x1a0037a0      0x10c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a0037b0      0x10c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
  .text.Chip_Clock_FindBaseClock
-                0x1a0038ac       0x4c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a0038bc       0x4c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
  .text.Chip_Clock_EnableCrystal
-                0x1a0038f8       0x4c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a0038f8                Chip_Clock_EnableCrystal
+                0x1a003908       0x4c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003908                Chip_Clock_EnableCrystal
  .text.Chip_Clock_GetDividerSource
-                0x1a003944       0x1c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003944                Chip_Clock_GetDividerSource
+                0x1a003954       0x1c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003954                Chip_Clock_GetDividerSource
  .text.Chip_Clock_GetDividerDivisor
-                0x1a003960       0x1c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003960                Chip_Clock_GetDividerDivisor
+                0x1a003970       0x1c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003970                Chip_Clock_GetDividerDivisor
  .text.Chip_Clock_GetClockInputHz
-                0x1a00397c       0xb8 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a00397c                Chip_Clock_GetClockInputHz
+                0x1a00398c       0xb8 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a00398c                Chip_Clock_GetClockInputHz
  .text.Chip_Clock_CalcMainPLLValue
-                0x1a003a34       0x80 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003a34                Chip_Clock_CalcMainPLLValue
+                0x1a003a44       0x80 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003a44                Chip_Clock_CalcMainPLLValue
  .text.Chip_Clock_GetMainPLLHz
-                0x1a003ab4       0x6c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003ab4                Chip_Clock_GetMainPLLHz
+                0x1a003ac4       0x6c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003ac4                Chip_Clock_GetMainPLLHz
  .text.Chip_Clock_GetDivRate
-                0x1a003b20       0x22 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
- *fill*         0x1a003b42        0x2 ff
+                0x1a003b30       0x22 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+ *fill*         0x1a003b52        0x2 ff
  .text.Chip_Clock_SetBaseClock
-                0x1a003b44       0x58 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003b44                Chip_Clock_SetBaseClock
+                0x1a003b54       0x58 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003b54                Chip_Clock_SetBaseClock
  .text.Chip_Clock_GetBaseClock
-                0x1a003b9c       0x26 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003b9c                Chip_Clock_GetBaseClock
+                0x1a003bac       0x26 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003bac                Chip_Clock_GetBaseClock
  .text.Chip_Clock_GetBaseClocktHz
-                0x1a003bc2        0xc app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003bc2                Chip_Clock_GetBaseClocktHz
- *fill*         0x1a003bce        0x2 ff
+                0x1a003bd2        0xc app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003bd2                Chip_Clock_GetBaseClocktHz
+ *fill*         0x1a003bde        0x2 ff
  .text.Chip_Clock_EnableOpts
-                0x1a003bd0       0x3c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003bd0                Chip_Clock_EnableOpts
+                0x1a003be0       0x3c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003be0                Chip_Clock_EnableOpts
  .text.Chip_Clock_Enable
-                0x1a003c0c       0x34 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003c0c                Chip_Clock_Enable
+                0x1a003c1c       0x34 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003c1c                Chip_Clock_Enable
  .text.Chip_Clock_GetRate
-                0x1a003c40       0x4c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
-                0x1a003c40                Chip_Clock_GetRate
+                0x1a003c50       0x4c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a003c50                Chip_Clock_GetRate
  .text.Chip_UART_GetIndex
-                0x1a003c8c       0x2c app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+                0x1a003c9c       0x2c app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
  .text.Chip_UART_Init
-                0x1a003cb8       0x54 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
-                0x1a003cb8                Chip_UART_Init
+                0x1a003cc8       0x54 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+                0x1a003cc8                Chip_UART_Init
  .text.Chip_UART_SetBaud
-                0x1a003d0c       0x40 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
-                0x1a003d0c                Chip_UART_SetBaud
+                0x1a003d1c       0x40 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+                0x1a003d1c                Chip_UART_SetBaud
  .text.Chip_UART_SetBaudFDR
-                0x1a003d4c       0xdc app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
-                0x1a003d4c                Chip_UART_SetBaudFDR
+                0x1a003d5c       0xdc app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+                0x1a003d5c                Chip_UART_SetBaudFDR
  .text.ResetISR
-                0x1a003e28       0x84 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
-                0x1a003e28                ResetISR
- .text._init    0x1a003eac        0x2 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
-                0x1a003eac                _init
- *fill*         0x1a003eae        0x2 ff
- .text          0x1a003eb0      0x378 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
-                0x1a003eb0                __aeabi_drsub
-                0x1a003eb8                __aeabi_dsub
-                0x1a003eb8                __subdf3
-                0x1a003ebc                __aeabi_dadd
-                0x1a003ebc                __adddf3
-                0x1a004134                __floatunsidf
-                0x1a004134                __aeabi_ui2d
-                0x1a004154                __floatsidf
-                0x1a004154                __aeabi_i2d
-                0x1a004178                __aeabi_f2d
-                0x1a004178                __extendsfdf2
-                0x1a0041bc                __floatundidf
-                0x1a0041bc                __aeabi_ul2d
-                0x1a0041cc                __floatdidf
-                0x1a0041cc                __aeabi_l2d
- .text          0x1a004228      0x424 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldivdf3.o)
-                0x1a004228                __aeabi_dmul
-                0x1a004228                __muldf3
-                0x1a00447c                __divdf3
-                0x1a00447c                __aeabi_ddiv
- .text          0x1a00464c       0x40 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixunsdfsi.o)
-                0x1a00464c                __aeabi_d2uiz
-                0x1a00464c                __fixunsdfsi
- .text          0x1a00468c       0x30 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_aeabi_uldivmod.o)
-                0x1a00468c                __aeabi_uldivmod
+                0x1a003e38       0x84 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
+                0x1a003e38                ResetISR
+ .text._init    0x1a003ebc        0x2 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
+                0x1a003ebc                _init
+ *fill*         0x1a003ebe        0x2 ff
+ .text          0x1a003ec0      0x378 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubdf3.o)
+                0x1a003ec0                __aeabi_drsub
+                0x1a003ec8                __aeabi_dsub
+                0x1a003ec8                __subdf3
+                0x1a003ecc                __aeabi_dadd
+                0x1a003ecc                __adddf3
+                0x1a004144                __floatunsidf
+                0x1a004144                __aeabi_ui2d
+                0x1a004164                __floatsidf
+                0x1a004164                __aeabi_i2d
+                0x1a004188                __aeabi_f2d
+                0x1a004188                __extendsfdf2
+                0x1a0041cc                __floatundidf
+                0x1a0041cc                __aeabi_ul2d
+                0x1a0041dc                __floatdidf
+                0x1a0041dc                __aeabi_l2d
+ .text          0x1a004238      0x424 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_muldivdf3.o)
+                0x1a004238                __aeabi_dmul
+                0x1a004238                __muldf3
+                0x1a00448c                __divdf3
+                0x1a00448c                __aeabi_ddiv
+ .text          0x1a00465c       0x40 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_fixunsdfsi.o)
+                0x1a00465c                __aeabi_d2uiz
+                0x1a00465c                __fixunsdfsi
+ .text          0x1a00469c       0x30 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_aeabi_uldivmod.o)
+                0x1a00469c                __aeabi_uldivmod
  .text.__udivmoddi4
-                0x1a0046bc      0x2d0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_udivmoddi4.o)
-                0x1a0046bc                __udivmoddi4
- .text          0x1a00498c        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_dvmd_tls.o)
-                0x1a00498c                __aeabi_idiv0
-                0x1a00498c                __aeabi_ldiv0
+                0x1a0046cc      0x2d0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_udivmoddi4.o)
+                0x1a0046cc                __udivmoddi4
+ .text          0x1a00499c        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_dvmd_tls.o)
+                0x1a00499c                __aeabi_idiv0
+                0x1a00499c                __aeabi_ldiv0
  .text.__libc_init_array
-                0x1a004990       0x48 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-init.o)
-                0x1a004990                __libc_init_array
- .text.memcpy   0x1a0049d8       0x1c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-memcpy-stub.o)
-                0x1a0049d8                memcpy
- .text.memset   0x1a0049f4       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-memset.o)
-                0x1a0049f4                memset
- .text.printf   0x1a004a04       0x30 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-printf.o)
-                0x1a004a04                iprintf
-                0x1a004a04                printf
- .text._puts_r  0x1a004a34       0xdc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-puts.o)
-                0x1a004a34                _puts_r
- .text.puts     0x1a004b10       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-puts.o)
-                0x1a004b10                puts
- .text.sscanf   0x1a004b20       0x54 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-sscanf.o)
-                0x1a004b20                siscanf
-                0x1a004b20                sscanf
- .text.__sread  0x1a004b74       0x22 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
-                0x1a004b74                __sread
+                0x1a0049a0       0x48 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-init.o)
+                0x1a0049a0                __libc_init_array
+ .text.memcpy   0x1a0049e8       0x1c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-memcpy-stub.o)
+                0x1a0049e8                memcpy
+ .text.memset   0x1a004a04       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-memset.o)
+                0x1a004a04                memset
+ .text.printf   0x1a004a14       0x30 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-printf.o)
+                0x1a004a14                iprintf
+                0x1a004a14                printf
+ .text._puts_r  0x1a004a44       0xdc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-puts.o)
+                0x1a004a44                _puts_r
+ .text.puts     0x1a004b20       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-puts.o)
+                0x1a004b20                puts
+ .text.sscanf   0x1a004b30       0x54 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-sscanf.o)
+                0x1a004b30                siscanf
+                0x1a004b30                sscanf
+ .text.__sread  0x1a004b84       0x22 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
+                0x1a004b84                __sread
  .text.__seofread
-                0x1a004b96        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
-                0x1a004b96                __seofread
+                0x1a004ba6        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
+                0x1a004ba6                __seofread
  .text.__swrite
-                0x1a004b9a       0x38 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
-                0x1a004b9a                __swrite
- .text.__sseek  0x1a004bd2       0x24 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
-                0x1a004bd2                __sseek
+                0x1a004baa       0x38 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
+                0x1a004baa                __swrite
+ .text.__sseek  0x1a004be2       0x24 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
+                0x1a004be2                __sseek
  .text.__sclose
-                0x1a004bf6        0x8 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
-                0x1a004bf6                __sclose
- .text          0x1a004bfe       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strlen.o)
-                0x1a004bfe                strlen
- *fill*         0x1a004c0e        0x2 ff
+                0x1a004c06        0x8 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-stdio.o)
+                0x1a004c06                __sclose
+ .text          0x1a004c0e       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strlen.o)
+                0x1a004c0e                strlen
+ *fill*         0x1a004c1e        0x2 ff
  .text.__swbuf_r
-                0x1a004c10       0xa4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-wbuf.o)
-                0x1a004c10                __swbuf_r
+                0x1a004c20       0xa4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-wbuf.o)
+                0x1a004c20                __swbuf_r
  .text.__swsetup_r
-                0x1a004cb4       0xdc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-wsetup.o)
-                0x1a004cb4                __swsetup_r
+                0x1a004cc4       0xdc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-wsetup.o)
+                0x1a004cc4                __swsetup_r
  .text.__sflush_r
-                0x1a004d90      0x10c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-fflush.o)
-                0x1a004d90                __sflush_r
+                0x1a004da0      0x10c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-fflush.o)
+                0x1a004da0                __sflush_r
  .text._fflush_r
-                0x1a004e9c       0x78 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-fflush.o)
-                0x1a004e9c                _fflush_r
- .text.std      0x1a004f14       0x48 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004eac       0x78 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-fflush.o)
+                0x1a004eac                _fflush_r
+ .text.std      0x1a004f24       0x48 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
  .text._cleanup_r
-                0x1a004f5c        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a004f5c                _cleanup_r
+                0x1a004f6c        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004f6c                _cleanup_r
  .text.__sfmoreglue
-                0x1a004f68       0x2c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a004f68                __sfmoreglue
+                0x1a004f78       0x2c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004f78                __sfmoreglue
  .text.__sfp_lock_acquire
-                0x1a004f94        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a004f94                __sfp_lock_acquire
+                0x1a004fa4        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004fa4                __sfp_lock_acquire
  .text.__sfp_lock_release
-                0x1a004fa0        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a004fa0                __sfp_lock_release
+                0x1a004fb0        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004fb0                __sfp_lock_release
  .text.__sinit_lock_acquire
-                0x1a004fac        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a004fac                __sinit_lock_acquire
+                0x1a004fbc        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004fbc                __sinit_lock_acquire
  .text.__sinit_lock_release
-                0x1a004fb8        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a004fb8                __sinit_lock_release
- .text.__sinit  0x1a004fc4       0x70 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a004fc4                __sinit
- .text.__sfp    0x1a005034       0x8c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a005034                __sfp
+                0x1a004fc8        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004fc8                __sinit_lock_release
+ .text.__sinit  0x1a004fd4       0x70 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a004fd4                __sinit
+ .text.__sfp    0x1a005044       0x8c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a005044                __sfp
  .text._fwalk_reent
-                0x1a0050c0       0x3c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-fwalk.o)
-                0x1a0050c0                _fwalk_reent
+                0x1a0050d0       0x3c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-fwalk.o)
+                0x1a0050d0                _fwalk_reent
  .text.__retarget_lock_init_recursive
-                0x1a0050fc        0x2 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
-                0x1a0050fc                __retarget_lock_init_recursive
+                0x1a00510c        0x2 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
+                0x1a00510c                __retarget_lock_init_recursive
  .text.__retarget_lock_acquire_recursive
-                0x1a0050fe        0x2 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
-                0x1a0050fe                __retarget_lock_acquire_recursive
+                0x1a00510e        0x2 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
+                0x1a00510e                __retarget_lock_acquire_recursive
  .text.__retarget_lock_release_recursive
-                0x1a005100        0x2 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
-                0x1a005100                __retarget_lock_release_recursive
+                0x1a005110        0x2 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
+                0x1a005110                __retarget_lock_release_recursive
  .text.__swhatbuf_r
-                0x1a005102       0x48 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-makebuf.o)
-                0x1a005102                __swhatbuf_r
- *fill*         0x1a00514a        0x2 ff
+                0x1a005112       0x48 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-makebuf.o)
+                0x1a005112                __swhatbuf_r
+ *fill*         0x1a00515a        0x2 ff
  .text.__smakebuf_r
-                0x1a00514c       0x80 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-makebuf.o)
-                0x1a00514c                __smakebuf_r
- .text._free_r  0x1a0051cc       0x9c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-freer.o)
-                0x1a0051cc                _free_r
+                0x1a00515c       0x80 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-makebuf.o)
+                0x1a00515c                __smakebuf_r
+ .text._free_r  0x1a0051dc       0x9c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-freer.o)
+                0x1a0051dc                _free_r
  .text._malloc_r
-                0x1a005268       0xb4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-mallocr.o)
-                0x1a005268                _malloc_r
+                0x1a005278       0xb4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-mallocr.o)
+                0x1a005278                _malloc_r
  .text._sungetc_r
-                0x1a00531c       0x7a f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
-                0x1a00531c                _sungetc_r
+                0x1a00532c       0x7a f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
+                0x1a00532c                _sungetc_r
  .text.__ssrefill_r
-                0x1a005396       0x3a f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
-                0x1a005396                __ssrefill_r
+                0x1a0053a6       0x3a f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
+                0x1a0053a6                __ssrefill_r
  .text.__ssvfscanf_r
-                0x1a0053d0      0x290 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
-                0x1a0053d0                __ssvfiscanf_r
-                0x1a0053d0                __ssvfscanf_r
+                0x1a0053e0      0x290 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
+                0x1a0053e0                __ssvfiscanf_r
+                0x1a0053e0                __ssvfscanf_r
  .text.__sfputc_r
-                0x1a005660       0x2e f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x1a005670       0x2e f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
  .text.__sfputs_r
-                0x1a00568e       0x24 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
-                0x1a00568e                __sfputs_r
- *fill*         0x1a0056b2        0x2 ff
+                0x1a00569e       0x24 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x1a00569e                __sfputs_r
+ *fill*         0x1a0056c2        0x2 ff
  .text._vfprintf_r
-                0x1a0056b4      0x250 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
-                0x1a0056b4                _vfprintf_r
-                0x1a0056b4                _vfiprintf_r
+                0x1a0056c4      0x250 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x1a0056c4                _vfprintf_r
+                0x1a0056c4                _vfiprintf_r
  .text._printf_common
-                0x1a005904       0xea f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf_i.o)
-                0x1a005904                _printf_common
- *fill*         0x1a0059ee        0x2 ff
+                0x1a005914       0xea f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x1a005914                _printf_common
+ *fill*         0x1a0059fe        0x2 ff
  .text._printf_i
-                0x1a0059f0      0x228 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf_i.o)
-                0x1a0059f0                _printf_i
+                0x1a005a00      0x228 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf_i.o)
+                0x1a005a00                _printf_i
  .text._scanf_chars
-                0x1a005c18       0xb0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
-                0x1a005c18                _scanf_chars
+                0x1a005c28       0xb0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x1a005c28                _scanf_chars
  .text._scanf_i
-                0x1a005cc8      0x1e8 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
-                0x1a005cc8                _scanf_i
- .text.__sccl   0x1a005eb0       0x64 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-sccl.o)
-                0x1a005eb0                __sccl
+                0x1a005cd8      0x1e8 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x1a005cd8                _scanf_i
+ .text.__sccl   0x1a005ec0       0x64 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-sccl.o)
+                0x1a005ec0                __sccl
  .text._strtol_l.isra.0
-                0x1a005f14       0xf0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtol.o)
+                0x1a005f24       0xf0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtol.o)
  .text._strtol_r
-                0x1a006004        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtol.o)
-                0x1a006004                _strtol_r
+                0x1a006014        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtol.o)
+                0x1a006014                _strtol_r
  .text._strtoul_l.isra.0
-                0x1a006008       0xec f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtoul.o)
+                0x1a006018       0xec f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtoul.o)
  .text._strtoul_r
-                0x1a0060f4        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtoul.o)
-                0x1a0060f4                _strtoul_r
+                0x1a006104        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-strtoul.o)
+                0x1a006104                _strtoul_r
  .text.__submore
-                0x1a0060f8       0x74 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-ungetc.o)
-                0x1a0060f8                __submore
- *fill*         0x1a00616c        0x4 ff
- .text          0x1a006170       0xa0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-memchr.o)
-                0x1a006170                memchr
+                0x1a006108       0x74 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-ungetc.o)
+                0x1a006108                __submore
+ *fill*         0x1a00617c        0x4 ff
+ .text          0x1a006180       0xa0 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-memchr.o)
+                0x1a006180                memchr
  .text.__malloc_lock
-                0x1a006210        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-mlock.o)
-                0x1a006210                __malloc_lock
+                0x1a006220        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-mlock.o)
+                0x1a006220                __malloc_lock
  .text.__malloc_unlock
-                0x1a00621c        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-mlock.o)
-                0x1a00621c                __malloc_unlock
+                0x1a00622c        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-mlock.o)
+                0x1a00622c                __malloc_unlock
  .text._realloc_r
-                0x1a006228       0x4c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-reallocr.o)
-                0x1a006228                _realloc_r
+                0x1a006238       0x4c f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-reallocr.o)
+                0x1a006238                _realloc_r
  .text._malloc_usable_size_r
-                0x1a006274       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-msizer.o)
-                0x1a006274                _malloc_usable_size_r
+                0x1a006284       0x10 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-msizer.o)
+                0x1a006284                _malloc_usable_size_r
  *(.rodata .rodata.* .constdata .constdata.*)
  .rodata.TaskMotors.str1.4
-                0x1a006284       0x1a app/out/app/src/app.o
- *fill*         0x1a00629e        0x2 ff
+                0x1a006294       0x1a app/out/app/src/app.o
+ *fill*         0x1a0062ae        0x2 ff
  .rodata.TaskSensors.str1.4
-                0x1a0062a0       0x1f app/out/app/src/app.o
- *fill*         0x1a0062bf        0x1 ff
+                0x1a0062b0       0x1f app/out/app/src/app.o
+ *fill*         0x1a0062cf        0x1 ff
  .rodata.TaskServo.str1.4
-                0x1a0062c0       0x2c app/out/app/src/app.o
+                0x1a0062d0       0x2c app/out/app/src/app.o
  .rodata.TaskUARTDecode.str1.4
-                0x1a0062ec       0x8c app/out/app/src/app.o
+                0x1a0062fc       0x8c app/out/app/src/app.o
  .rodata.main.str1.4
-                0x1a006378       0x72 app/out/app/src/app.o
- *fill*         0x1a0063ea        0x2 ff
+                0x1a006388       0x72 app/out/app/src/app.o
+ *fill*         0x1a0063fa        0x2 ff
  .rodata.str1.4
-                0x1a0063ec       0x1e app/out/app/src/app.o
- *fill*         0x1a00640a        0x2 ff
+                0x1a0063fc       0x1e app/out/app/src/app.o
+ *fill*         0x1a00641a        0x2 ff
  .rodata.prvCheckForValidListAndQueue.str1.4
-                0x1a00640c        0x5 app/out/libs/freertos/source/timers.o
- *fill*         0x1a006411        0x3 ff
- .rodata.xTimerCreateTimerTask.str1.4
-                0x1a006414        0x8 app/out/libs/freertos/source/timers.o
- .rodata.vTaskStartScheduler.str1.4
-                0x1a00641c        0x5 app/out/libs/freertos/source/tasks.o
+                0x1a00641c        0x5 app/out/libs/freertos/source/timers.o
  *fill*         0x1a006421        0x3 ff
+ .rodata.xTimerCreateTimerTask.str1.4
+                0x1a006424        0x8 app/out/libs/freertos/source/timers.o
+ .rodata.vTaskStartScheduler.str1.4
+                0x1a00642c        0x5 app/out/libs/freertos/source/tasks.o
+ *fill*         0x1a006431        0x3 ff
  .rodata.gpioPinsInit
-                0x1a006424      0x136 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
-                0x1a006424                gpioPinsInit
- *fill*         0x1a00655a        0x2 ff
+                0x1a006434      0x136 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+                0x1a006434                gpioPinsInit
+ *fill*         0x1a00656a        0x2 ff
  .rodata.SCTdataList
-                0x1a00655c       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+                0x1a00656c       0x1c app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
  .rodata.timer_sd
-                0x1a006578       0x30 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+                0x1a006588       0x30 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
  .rodata.tickInit.str1.4
-                0x1a0065a8        0xc app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+                0x1a0065b8        0xc app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
  .rodata.lpcUarts
-                0x1a0065b4       0x48 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+                0x1a0065c4       0x48 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
  .rodata.pwmMap
-                0x1a0065fc        0xb app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
- *fill*         0x1a006607        0x1 ff
+                0x1a00660c        0xb app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+ *fill*         0x1a006617        0x1 ff
  .rodata.InitClkStates
-                0x1a006608        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+                0x1a006618        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
  .rodata.pinmuxing
-                0x1a00660c       0x74 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+                0x1a00661c       0x74 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
  .rodata.ExtRateIn
-                0x1a006680        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
-                0x1a006680                ExtRateIn
+                0x1a006690        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a006690                ExtRateIn
  .rodata.GpioButtons
-                0x1a006684        0x8 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a006694        0x8 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .rodata.GpioLeds
-                0x1a00668c        0xc app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a00669c        0xc app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
  .rodata.GpioPorts
-                0x1a006698       0x12 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
- *fill*         0x1a0066aa        0x2 ff
+                0x1a0066a8       0x12 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+ *fill*         0x1a0066ba        0x2 ff
  .rodata.OscRateIn
-                0x1a0066ac        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
-                0x1a0066ac                OscRateIn
+                0x1a0066bc        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+                0x1a0066bc                OscRateIn
  .rodata.InitClkStates
-                0x1a0066b0       0x48 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
- .rodata        0x1a0066f8        0x4 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a0066c0       0x48 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
+ .rodata        0x1a006708        0x4 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
  .rodata.Chip_Clock_SetDivider.str1.4
-                0x1a0066fc        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a00670c        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
                                   0x6 (size before relaxing)
  .rodata.periph_to_base
-                0x1a006704       0x6c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x1a006714       0x6c app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
  .rodata.UART_BClock
-                0x1a006770        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+                0x1a006780        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
  .rodata.UART_PClock
-                0x1a006778        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+                0x1a006788        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
  .rodata.__sf_fake_stderr
-                0x1a006780       0x20 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a006780                __sf_fake_stderr
+                0x1a006790       0x20 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a006790                __sf_fake_stderr
  .rodata.__sf_fake_stdin
-                0x1a0067a0       0x20 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a0067a0                __sf_fake_stdin
+                0x1a0067b0       0x20 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a0067b0                __sf_fake_stdin
  .rodata.__sf_fake_stdout
-                0x1a0067c0       0x20 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
-                0x1a0067c0                __sf_fake_stdout
+                0x1a0067d0       0x20 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-findfp.o)
+                0x1a0067d0                __sf_fake_stdout
  .rodata._global_impure_ptr
-                0x1a0067e0        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-impure.o)
-                0x1a0067e0                _global_impure_ptr
+                0x1a0067f0        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-impure.o)
+                0x1a0067f0                _global_impure_ptr
  .rodata.__ssvfscanf_r.str1.1
-                0x1a0067e4        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
+                0x1a0067f4        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-svfscanf.o)
  .rodata._vfprintf_r.str1.1
-                0x1a0067e8        0xd f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
+                0x1a0067f8        0xd f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf.o)
                                  0x11 (size before relaxing)
  .rodata._printf_i.str1.1
-                0x1a0067f5       0x22 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf_i.o)
- *fill*         0x1a006817        0x1 ff
- .rodata        0x1a006818        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x1a006805       0x22 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfprintf_i.o)
+ *fill*         0x1a006827        0x1 ff
+ .rodata        0x1a006828        0xc f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
  .rodata._scanf_i.str1.1
-                0x1a006824       0x12 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x1a006834       0x12 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
  .rodata.str1.1
-                0x1a006836        0x9 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
+                0x1a006846        0x9 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-vfscanf_i.o)
  .rodata._ctype_
-                0x1a00683f      0x101 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-ctype_.o)
-                0x1a00683f                _ctype_
-                0x1a006940                . = ALIGN (0x4)
+                0x1a00684f      0x101 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-ctype_.o)
+                0x1a00684f                _ctype_
+                0x1a006950                . = ALIGN (0x4)
 
-.glue_7         0x1a006940        0x0
- .glue_7        0x1a006940        0x0 linker stubs
+.glue_7         0x1a006950        0x0
+ .glue_7        0x1a006950        0x0 linker stubs
 
-.glue_7t        0x1a006940        0x0
- .glue_7t       0x1a006940        0x0 linker stubs
+.glue_7t        0x1a006950        0x0
+ .glue_7t       0x1a006950        0x0 linker stubs
 
-.vfp11_veneer   0x1a006940        0x0
- .vfp11_veneer  0x1a006940        0x0 linker stubs
+.vfp11_veneer   0x1a006950        0x0
+ .vfp11_veneer  0x1a006950        0x0 linker stubs
 
-.v4_bx          0x1a006940        0x0
- .v4_bx         0x1a006940        0x0 linker stubs
+.v4_bx          0x1a006950        0x0
+ .v4_bx         0x1a006950        0x0 linker stubs
 
-.iplt           0x1a006940        0x0
- .iplt          0x1a006940        0x0 app/out/app/src/app.o
-                0x1a006940                . = ALIGN (0x4)
+.iplt           0x1a006950        0x0
+ .iplt          0x1a006950        0x0 app/out/app/src/app.o
+                0x1a006950                . = ALIGN (0x4)
 
-.preinit_array  0x1a006940        0x0
-                0x1a006940                PROVIDE (__preinit_array_start = .)
+.preinit_array  0x1a006950        0x0
+                0x1a006950                PROVIDE (__preinit_array_start = .)
  *(.preinit_array*)
-                0x1a006940                PROVIDE (__preinit_array_end = .)
+                0x1a006950                PROVIDE (__preinit_array_end = .)
 
-.init_array     0x1a006940        0x0
-                0x1a006940                PROVIDE (__init_array_start = .)
+.init_array     0x1a006950        0x0
+                0x1a006950                PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array*)
-                0x1a006940                PROVIDE (__init_array_end = .)
-                0x1a006940                . = ALIGN (0x4)
+                0x1a006950                PROVIDE (__init_array_end = .)
+                0x1a006950                . = ALIGN (0x4)
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x1a006940                __exidx_start = .
+                0x1a006950                __exidx_start = .
 
-.ARM.exidx      0x1a006940        0x8
+.ARM.exidx      0x1a006950        0x8
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
  .ARM.exidx.text.__udivmoddi4
-                0x1a006940        0x8 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_udivmoddi4.o)
-                0x1a006948                __exidx_end = .
-                0x1a006948                _etext = .
+                0x1a006950        0x8 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/thumb/v7e-m+fp/hard\libgcc.a(_udivmoddi4.o)
+                0x1a006958                __exidx_end = .
+                0x1a006958                _etext = .
 
-.rel.dyn        0x1a006948        0x0
- .rel.iplt      0x1a006948        0x0 app/out/app/src/app.o
+.rel.dyn        0x1a006958        0x0
+ .rel.iplt      0x1a006958        0x0 app/out/app/src/app.o
 
-.data_RAM2      0x10080000        0x0 load address 0x1a006948
+.data_RAM2      0x10080000        0x0 load address 0x1a006958
  FILL mask 0xff
  *(.ramfunc.$RAM2)
  *(.ramfunc.$RamLoc40)
@@ -15709,7 +15708,7 @@ END GROUP
  *(.data.$RamLoc40*)
                 0x10080000                . = ALIGN (0x4)
 
-.data_RAM3      0x20000000        0x0 load address 0x1a006948
+.data_RAM3      0x20000000        0x0 load address 0x1a006958
  FILL mask 0xff
  *(.ramfunc.$RAM3)
  *(.ramfunc.$RamAHB32)
@@ -15717,7 +15716,7 @@ END GROUP
  *(.data.$RamAHB32*)
                 0x20000000                . = ALIGN (0x4)
 
-.data_RAM4      0x20008000        0x0 load address 0x1a006948
+.data_RAM4      0x20008000        0x0 load address 0x1a006958
  FILL mask 0xff
  *(.ramfunc.$RAM4)
  *(.ramfunc.$RamAHB16)
@@ -15725,7 +15724,7 @@ END GROUP
  *(.data.$RamAHB16*)
                 0x20008000                . = ALIGN (0x4)
 
-.data_RAM5      0x2000c000        0x0 load address 0x1a006948
+.data_RAM5      0x2000c000        0x0 load address 0x1a006958
  FILL mask 0xff
  *(.ramfunc.$RAM5)
  *(.ramfunc.$RamAHB_ETB16)
@@ -15739,7 +15738,7 @@ END GROUP
                 0x10000000                . = ALIGN (0x4)
                 0x10000000                _end_uninit_RESERVED = .
 
-.data           0x10000000      0x108 load address 0x1a006948
+.data           0x10000000      0x108 load address 0x1a006958
  FILL mask 0xff
                 0x10000000                _data = .
  *(vtable)
@@ -15775,7 +15774,7 @@ END GROUP
                 0x10000108                . = ALIGN (0x4)
                 0x10000108                _edata = .
 
-.igot.plt       0x10000108        0x0 load address 0x1a006a50
+.igot.plt       0x10000108        0x0 load address 0x1a006a60
  .igot.plt      0x10000108        0x0 app/out/app/src/app.o
 
 .bss_RAM2       0x10080000        0x0
@@ -15798,16 +15797,16 @@ END GROUP
  *(.bss.$RamAHB_ETB16*)
                 0x2000c000                . = ALIGN (0x4)
 
-.bss            0x10000108     0x3388
+.bss            0x10000108     0x3390
                 0x10000108                _bss = .
  *(.bss*)
  .bss.currentMode
                 0x10000108        0x1 app/out/app/src/app.o
                 0x10000108                currentMode
  *fill*         0x10000109        0x1 
- .bss.current_pwm_signed.14253
+ .bss.current_pwm_signed.14254
                 0x1000010a        0x2 app/out/app/src/app.o
- .bss.debug_cnt.14245
+ .bss.debug_cnt.14246
                 0x1000010c        0x4 app/out/app/src/app.o
  .bss.dist1_cm  0x10000110        0x4 app/out/app/src/app.o
                 0x10000110                dist1_cm
@@ -15827,153 +15826,156 @@ END GROUP
  .bss.global_throttle
                 0x10000122        0x2 app/out/app/src/app.o
                 0x10000122                global_throttle
- .bss.last_btns.14244
+ .bss.last_btns.14245
                 0x10000124        0x2 app/out/app/src/app.o
  *fill*         0x10000126        0x2 
- .bss.m_debug.14264
+ .bss.log_cnt.14210
                 0x10000128        0x4 app/out/app/src/app.o
- .bss.rxHead    0x1000012c        0x2 app/out/app/src/app.o
-                0x1000012c                rxHead
- .bss.rxTail    0x1000012e        0x2 app/out/app/src/app.o
-                0x1000012e                rxTail
+ .bss.m_debug.14265
+                0x1000012c        0x4 app/out/app/src/app.o
+ .bss.rxHead    0x10000130        0x2 app/out/app/src/app.o
+                0x10000130                rxHead
+ .bss.rxTail    0x10000132        0x2 app/out/app/src/app.o
+                0x10000132                rxTail
  .bss.start_cycles_s1
-                0x10000130        0x4 app/out/app/src/app.o
-                0x10000130                start_cycles_s1
- .bss.start_cycles_s2
                 0x10000134        0x4 app/out/app/src/app.o
-                0x10000134                start_cycles_s2
- .bss.start_cycles_s3
+                0x10000134                start_cycles_s1
+ .bss.start_cycles_s2
                 0x10000138        0x4 app/out/app/src/app.o
-                0x10000138                start_cycles_s3
- .bss.xSensorTaskHandle
+                0x10000138                start_cycles_s2
+ .bss.start_cycles_s3
                 0x1000013c        0x4 app/out/app/src/app.o
- .bss.xUARTTaskHandle
+                0x1000013c                start_cycles_s3
+ .bss.xSensorTaskHandle
                 0x10000140        0x4 app/out/app/src/app.o
+ .bss.xUARTTaskHandle
+                0x10000144        0x4 app/out/app/src/app.o
  .bss.pucAlignedHeap.11402
-                0x10000144        0x4 app/out/libs/freertos/MemMang/heap_1.o
- .bss.ucHeap    0x10000148     0x2800 app/out/libs/freertos/MemMang/heap_1.o
+                0x10000148        0x4 app/out/libs/freertos/MemMang/heap_1.o
+ .bss.ucHeap    0x1000014c     0x2800 app/out/libs/freertos/MemMang/heap_1.o
  .bss.xNextFreeByte
-                0x10002948        0x4 app/out/libs/freertos/MemMang/heap_1.o
+                0x1000294c        0x4 app/out/libs/freertos/MemMang/heap_1.o
  .bss.pxCurrentTimerList
-                0x1000294c        0x4 app/out/libs/freertos/source/timers.o
- .bss.pxOverflowTimerList
                 0x10002950        0x4 app/out/libs/freertos/source/timers.o
+ .bss.pxOverflowTimerList
+                0x10002954        0x4 app/out/libs/freertos/source/timers.o
  .bss.ucStaticTimerQueueStorage.11775
-                0x10002954       0x3c app/out/libs/freertos/source/timers.o
+                0x10002958       0x3c app/out/libs/freertos/source/timers.o
  .bss.xActiveTimerList1
-                0x10002990       0x14 app/out/libs/freertos/source/timers.o
+                0x10002994       0x14 app/out/libs/freertos/source/timers.o
  .bss.xActiveTimerList2
-                0x100029a4       0x14 app/out/libs/freertos/source/timers.o
+                0x100029a8       0x14 app/out/libs/freertos/source/timers.o
  .bss.xLastTime.11729
-                0x100029b8        0x4 app/out/libs/freertos/source/timers.o
+                0x100029bc        0x4 app/out/libs/freertos/source/timers.o
  .bss.xStaticTimerQueue.11774
-                0x100029bc       0x50 app/out/libs/freertos/source/timers.o
+                0x100029c0       0x50 app/out/libs/freertos/source/timers.o
  .bss.xTimerQueue
-                0x10002a0c        0x4 app/out/libs/freertos/source/timers.o
- .bss.xTimerTaskHandle
                 0x10002a10        0x4 app/out/libs/freertos/source/timers.o
+ .bss.xTimerTaskHandle
+                0x10002a14        0x4 app/out/libs/freertos/source/timers.o
  .bss.pxCurrentTCB
-                0x10002a14        0x4 app/out/libs/freertos/source/tasks.o
-                0x10002a14                pxCurrentTCB
- .bss.pxDelayedTaskList
                 0x10002a18        0x4 app/out/libs/freertos/source/tasks.o
- .bss.pxOverflowDelayedTaskList
+                0x10002a18                pxCurrentTCB
+ .bss.pxDelayedTaskList
                 0x10002a1c        0x4 app/out/libs/freertos/source/tasks.o
+ .bss.pxOverflowDelayedTaskList
+                0x10002a20        0x4 app/out/libs/freertos/source/tasks.o
  .bss.pxReadyTasksLists
-                0x10002a20       0x64 app/out/libs/freertos/source/tasks.o
+                0x10002a24       0x64 app/out/libs/freertos/source/tasks.o
  .bss.uxCurrentNumberOfTasks
-                0x10002a84        0x4 app/out/libs/freertos/source/tasks.o
- .bss.uxDeletedTasksWaitingCleanUp
                 0x10002a88        0x4 app/out/libs/freertos/source/tasks.o
- .bss.uxPendedTicks
+ .bss.uxDeletedTasksWaitingCleanUp
                 0x10002a8c        0x4 app/out/libs/freertos/source/tasks.o
- .bss.uxSchedulerSuspended
+ .bss.uxPendedTicks
                 0x10002a90        0x4 app/out/libs/freertos/source/tasks.o
- .bss.uxTaskNumber
+ .bss.uxSchedulerSuspended
                 0x10002a94        0x4 app/out/libs/freertos/source/tasks.o
- .bss.uxTopReadyPriority
+ .bss.uxTaskNumber
                 0x10002a98        0x4 app/out/libs/freertos/source/tasks.o
+ .bss.uxTopReadyPriority
+                0x10002a9c        0x4 app/out/libs/freertos/source/tasks.o
  .bss.xDelayedTaskList1
-                0x10002a9c       0x14 app/out/libs/freertos/source/tasks.o
+                0x10002aa0       0x14 app/out/libs/freertos/source/tasks.o
  .bss.xDelayedTaskList2
-                0x10002ab0       0x14 app/out/libs/freertos/source/tasks.o
+                0x10002ab4       0x14 app/out/libs/freertos/source/tasks.o
  .bss.xNextTaskUnblockTime
-                0x10002ac4        0x4 app/out/libs/freertos/source/tasks.o
- .bss.xNumOfOverflows
                 0x10002ac8        0x4 app/out/libs/freertos/source/tasks.o
+ .bss.xNumOfOverflows
+                0x10002acc        0x4 app/out/libs/freertos/source/tasks.o
  .bss.xPendingReadyList
-                0x10002acc       0x14 app/out/libs/freertos/source/tasks.o
+                0x10002ad0       0x14 app/out/libs/freertos/source/tasks.o
  .bss.xSchedulerRunning
-                0x10002ae0        0x4 app/out/libs/freertos/source/tasks.o
+                0x10002ae4        0x4 app/out/libs/freertos/source/tasks.o
  .bss.xSuspendedTaskList
-                0x10002ae4       0x14 app/out/libs/freertos/source/tasks.o
+                0x10002ae8       0x14 app/out/libs/freertos/source/tasks.o
  .bss.xTasksWaitingTermination
-                0x10002af8       0x14 app/out/libs/freertos/source/tasks.o
+                0x10002afc       0x14 app/out/libs/freertos/source/tasks.o
  .bss.xTickCount
-                0x10002b0c        0x4 app/out/libs/freertos/source/tasks.o
- .bss.xYieldPending
                 0x10002b10        0x4 app/out/libs/freertos/source/tasks.o
+ .bss.xYieldPending
+                0x10002b14        0x4 app/out/libs/freertos/source/tasks.o
  .bss.uxIdleTaskStack.10691
-                0x10002b14      0x200 app/out/libs/freertos/source/static_provider.o
+                0x10002b18      0x200 app/out/libs/freertos/source/static_provider.o
  .bss.uxTimerTaskStack.10698
-                0x10002d14      0x400 app/out/libs/freertos/source/static_provider.o
+                0x10002d18      0x400 app/out/libs/freertos/source/static_provider.o
  .bss.xIdleTaskTCB.10690
-                0x10003114       0x5c app/out/libs/freertos/source/static_provider.o
+                0x10003118       0x5c app/out/libs/freertos/source/static_provider.o
  .bss.xTimerTaskTCB.10697
-                0x10003170       0x5c app/out/libs/freertos/source/static_provider.o
+                0x10003174       0x5c app/out/libs/freertos/source/static_provider.o
  .bss.callBackFuncParams
-                0x100031cc        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+                0x100031d0        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+ *fill*         0x100031d4        0x4 
  .bss.tickCounter
-                0x100031d0        0x8 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+                0x100031d8        0x8 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
  .bss.tickHookFunction
-                0x100031d8        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+                0x100031e0        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
  .bss.tickerObject.11790
-                0x100031dc       0x30 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+                0x100031e4       0x30 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
  .bss.rxIsrCallbackUART0
-                0x1000320c        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .bss.rxIsrCallbackUART2
-                0x10003210        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .bss.rxIsrCallbackUART3
                 0x10003214        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .bss.txIsrCallbackUART0
+ .bss.rxIsrCallbackUART2
                 0x10003218        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .bss.txIsrCallbackUART2
+ .bss.rxIsrCallbackUART3
                 0x1000321c        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .bss.txIsrCallbackUART3
+ .bss.txIsrCallbackUART0
                 0x10003220        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .bss.g_hUsb    0x10003224        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
+ .bss.txIsrCallbackUART2
+                0x10003224        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+ .bss.txIsrCallbackUART3
+                0x10003228        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+ .bss.g_hUsb    0x1000322c        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
  .bss.heap_end.11577
-                0x10003228        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+                0x10003230        0x4 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
  .bss.audio_usb_pll_freq
-                0x1000322c        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+                0x10003234        0x8 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
  .bss.__malloc_free_list
-                0x10003234        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-mallocr.o)
-                0x10003234                __malloc_free_list
+                0x1000323c        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-mallocr.o)
+                0x1000323c                __malloc_free_list
  .bss.__malloc_sbrk_start
-                0x10003238        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-mallocr.o)
-                0x10003238                __malloc_sbrk_start
+                0x10003240        0x4 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-nano-mallocr.o)
+                0x10003240                __malloc_sbrk_start
  *(COMMON)
- COMMON         0x1000323c      0x200 app/out/app/src/app.o
-                0x1000323c                rxBuffer
- COMMON         0x1000343c       0x40 app/out/libs/freertos/source/queue.o
-                0x1000343c                xQueueRegistry
- COMMON         0x1000347c        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
-                0x1000347c                g_pUsbApi
- COMMON         0x10003480        0x4 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
-                0x10003480                SystemCoreClock
- COMMON         0x10003484        0x9 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
-                0x10003484                __lock___atexit_recursive_mutex
-                0x10003485                __lock___arc4random_mutex
-                0x10003486                __lock___env_recursive_mutex
-                0x10003487                __lock___sinit_recursive_mutex
-                0x10003488                __lock___malloc_recursive_mutex
-                0x10003489                __lock___at_quick_exit_mutex
-                0x1000348a                __lock___dd_hash_mutex
-                0x1000348b                __lock___tz_mutex
-                0x1000348c                __lock___sfp_recursive_mutex
-                0x10003490                . = ALIGN (0x4)
- *fill*         0x1000348d        0x3 
-                0x10003490                _ebss = .
+ COMMON         0x10003244      0x200 app/out/app/src/app.o
+                0x10003244                rxBuffer
+ COMMON         0x10003444       0x40 app/out/libs/freertos/source/queue.o
+                0x10003444                xQueueRegistry
+ COMMON         0x10003484        0x4 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
+                0x10003484                g_pUsbApi
+ COMMON         0x10003488        0x4 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
+                0x10003488                SystemCoreClock
+ COMMON         0x1000348c        0x9 f:/proyectos/car/tallerdeproyecto1/ciaa_software_1.1-win/ciaa_software_1.1-win/tools/arm-none-eabi-gcc/bin/../lib/gcc/arm-none-eabi/8.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard\libc_nano.a(lib_a-lock.o)
+                0x1000348c                __lock___atexit_recursive_mutex
+                0x1000348d                __lock___arc4random_mutex
+                0x1000348e                __lock___env_recursive_mutex
+                0x1000348f                __lock___sinit_recursive_mutex
+                0x10003490                __lock___malloc_recursive_mutex
+                0x10003491                __lock___at_quick_exit_mutex
+                0x10003492                __lock___dd_hash_mutex
+                0x10003493                __lock___tz_mutex
+                0x10003494                __lock___sfp_recursive_mutex
+                0x10003498                . = ALIGN (0x4)
+ *fill*         0x10003495        0x3 
+                0x10003498                _ebss = .
                 [!provide]                PROVIDE (end = .)
 
 .noinit_RAM2    0x10080000        0x0
@@ -15996,53 +15998,53 @@ END GROUP
  *(.noinit.$RamAHB_ETB16*)
                 0x2000c000                . = ALIGN (0x4)
 
-.noinit         0x10003490        0x0
-                0x10003490                _noinit = .
+.noinit         0x10003498        0x0
+                0x10003498                _noinit = .
  *(.noinit*)
-                0x10003490                . = ALIGN (0x4)
-                0x10003490                _end_noinit = .
-                0x10003490                PROVIDE (_pvHeapStart = .)
+                0x10003498                . = ALIGN (0x4)
+                0x10003498                _end_noinit = .
+                0x10003498                PROVIDE (_pvHeapStart = .)
                 0x10008000                PROVIDE (_vStackTop = (__top_RamLoc32 - 0x0))
-                0x53ff3a34                PROVIDE (__valid_user_code_checksum = (0x0 - ((((((_vStackTop + (ResetISR + 0x1)) + (NMI_Handler + 0x1)) + (HardFault_Handler + 0x1)) + (DEFINED (MemManage_Handler)?MemManage_Handler:0x0 + 0x1)) + (DEFINED (BusFault_Handler)?BusFault_Handler:0x0 + 0x1)) + (DEFINED (UsageFault_Handler)?UsageFault_Handler:0x0 + 0x1))))
+                0x53ff3a24                PROVIDE (__valid_user_code_checksum = (0x0 - ((((((_vStackTop + (ResetISR + 0x1)) + (NMI_Handler + 0x1)) + (HardFault_Handler + 0x1)) + (DEFINED (MemManage_Handler)?MemManage_Handler:0x0 + 0x1)) + (DEFINED (BusFault_Handler)?BusFault_Handler:0x0 + 0x1)) + (DEFINED (UsageFault_Handler)?UsageFault_Handler:0x0 + 0x1))))
 OUTPUT(app/out/app.elf elf32-littlearm)
 
-.debug_info     0x00000000    0x31257
- .debug_info    0x00000000     0x4e89 app/out/app/src/app.o
- .debug_info    0x00004e89      0xf65 app/out/libs/freertos/MemMang/heap_1.o
- .debug_info    0x00005dee     0x22a9 app/out/libs/freertos/source/timers.o
- .debug_info    0x00008097     0x3893 app/out/libs/freertos/source/tasks.o
- .debug_info    0x0000b92a      0x34b app/out/libs/freertos/source/static_provider.o
- .debug_info    0x0000bc75      0xbca app/out/libs/freertos/source/list.o
- .debug_info    0x0000c83f     0x2e33 app/out/libs/freertos/source/queue.o
- .debug_info    0x0000f672      0x89b app/out/libs/freertos/source/portable/ARM_CM4F/port.o
- .debug_info    0x0000ff0d      0xf72 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
- .debug_info    0x00010e7f     0x1d24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
- .debug_info    0x00012ba3     0x1c04 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
- .debug_info    0x000147a7     0x1fbc app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
- .debug_info    0x00016763     0x120a app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
- .debug_info    0x0001796d     0x27d0 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .debug_info    0x0001a13d     0x12e1 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
- .debug_info    0x0001b41e     0x357f app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
- .debug_info    0x0001e99d      0xe41 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
- .debug_info    0x0001f7de      0xc6b app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
- .debug_info    0x00020449     0x15d2 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
- .debug_info    0x00021a1b      0x9e8 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
- .debug_info    0x00022403     0x10f9 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
- .debug_info    0x000234fc     0x2360 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
- .debug_info    0x0002585c     0x1a33 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
- .debug_info    0x0002728f      0xc07 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
- .debug_info    0x00027e96     0x159b app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
- .debug_info    0x00029431      0x232 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
- .debug_info    0x00029663      0xa68 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
- .debug_info    0x0002a0cb      0x156 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
- .debug_info    0x0002a221      0x5b4 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
- .debug_info    0x0002a7d5      0xc0c app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
- .debug_info    0x0002b3e1      0xb39 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
- .debug_info    0x0002bf1a      0xc97 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
- .debug_info    0x0002cbb1     0x1b68 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
- .debug_info    0x0002e719     0x1981 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
- .debug_info    0x0003009a     0x117d app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
- .debug_info    0x00031217       0x40 app/out/libs/vendor_libs/lpc_startup/src/crp.o
+.debug_info     0x00000000    0x31272
+ .debug_info    0x00000000     0x4ea4 app/out/app/src/app.o
+ .debug_info    0x00004ea4      0xf65 app/out/libs/freertos/MemMang/heap_1.o
+ .debug_info    0x00005e09     0x22a9 app/out/libs/freertos/source/timers.o
+ .debug_info    0x000080b2     0x3893 app/out/libs/freertos/source/tasks.o
+ .debug_info    0x0000b945      0x34b app/out/libs/freertos/source/static_provider.o
+ .debug_info    0x0000bc90      0xbca app/out/libs/freertos/source/list.o
+ .debug_info    0x0000c85a     0x2e33 app/out/libs/freertos/source/queue.o
+ .debug_info    0x0000f68d      0x89b app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+ .debug_info    0x0000ff28      0xf72 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
+ .debug_info    0x00010e9a     0x1d24 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+ .debug_info    0x00012bbe     0x1c04 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+ .debug_info    0x000147c2     0x1fbc app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+ .debug_info    0x0001677e     0x120a app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+ .debug_info    0x00017988     0x27d0 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+ .debug_info    0x0001a158     0x12e1 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+ .debug_info    0x0001b439     0x357f app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
+ .debug_info    0x0001e9b8      0xe41 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
+ .debug_info    0x0001f7f9      0xc6b app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
+ .debug_info    0x00020464     0x15d2 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+ .debug_info    0x00021a36      0x9e8 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
+ .debug_info    0x0002241e     0x10f9 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+ .debug_info    0x00023517     0x2360 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+ .debug_info    0x00025877     0x1a33 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+ .debug_info    0x000272aa      0xc07 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
+ .debug_info    0x00027eb1     0x159b app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
+ .debug_info    0x0002944c      0x232 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
+ .debug_info    0x0002967e      0xa68 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
+ .debug_info    0x0002a0e6      0x156 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
+ .debug_info    0x0002a23c      0x5b4 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
+ .debug_info    0x0002a7f0      0xc0c app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+ .debug_info    0x0002b3fc      0xb39 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
+ .debug_info    0x0002bf35      0xc97 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
+ .debug_info    0x0002cbcc     0x1b68 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+ .debug_info    0x0002e734     0x1981 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+ .debug_info    0x000300b5     0x117d app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
+ .debug_info    0x00031232       0x40 app/out/libs/vendor_libs/lpc_startup/src/crp.o
 
 .debug_abbrev   0x00000000     0x6bc9
  .debug_abbrev  0x00000000      0x598 app/out/app/src/app.o
@@ -16188,42 +16190,42 @@ OUTPUT(app/out/app.elf elf32-littlearm)
  .debug_aranges
                 0x00001078       0x18 app/out/libs/vendor_libs/lpc_startup/src/crp.o
 
-.debug_ranges   0x00000000     0x1348
- .debug_ranges  0x00000000      0x118 app/out/app/src/app.o
- .debug_ranges  0x00000118       0x28 app/out/libs/freertos/MemMang/heap_1.o
- .debug_ranges  0x00000140       0xc0 app/out/libs/freertos/source/timers.o
- .debug_ranges  0x00000200      0x2f8 app/out/libs/freertos/source/tasks.o
- .debug_ranges  0x000004f8       0x18 app/out/libs/freertos/source/static_provider.o
- .debug_ranges  0x00000510       0x30 app/out/libs/freertos/source/list.o
- .debug_ranges  0x00000540      0x1e0 app/out/libs/freertos/source/queue.o
- .debug_ranges  0x00000720       0x68 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
- .debug_ranges  0x00000788       0x30 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
- .debug_ranges  0x000007b8       0xa8 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
- .debug_ranges  0x00000860       0x90 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
- .debug_ranges  0x000008f0       0x80 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
- .debug_ranges  0x00000970       0x38 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
- .debug_ranges  0x000009a8      0x108 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .debug_ranges  0x00000ab0       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
- .debug_ranges  0x00000af0       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
- .debug_ranges  0x00000b30       0x10 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
- .debug_ranges  0x00000b40       0x40 app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
- .debug_ranges  0x00000b80       0x50 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
- .debug_ranges  0x00000bd0       0x10 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
- .debug_ranges  0x00000be0       0xb8 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
- .debug_ranges  0x00000c98       0xe0 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
- .debug_ranges  0x00000d78       0xc0 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
- .debug_ranges  0x00000e38       0x38 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
- .debug_ranges  0x00000e70       0xc8 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
- .debug_ranges  0x00000f38       0x18 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
- .debug_ranges  0x00000f50       0x28 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
- .debug_ranges  0x00000f78       0x10 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
- .debug_ranges  0x00000f88       0x30 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
- .debug_ranges  0x00000fb8       0x80 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
- .debug_ranges  0x00001038       0x28 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
- .debug_ranges  0x00001060       0x28 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
- .debug_ranges  0x00001088      0x198 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
- .debug_ranges  0x00001220       0xb0 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
- .debug_ranges  0x000012d0       0x78 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
+.debug_ranges   0x00000000     0x1360
+ .debug_ranges  0x00000000      0x130 app/out/app/src/app.o
+ .debug_ranges  0x00000130       0x28 app/out/libs/freertos/MemMang/heap_1.o
+ .debug_ranges  0x00000158       0xc0 app/out/libs/freertos/source/timers.o
+ .debug_ranges  0x00000218      0x2f8 app/out/libs/freertos/source/tasks.o
+ .debug_ranges  0x00000510       0x18 app/out/libs/freertos/source/static_provider.o
+ .debug_ranges  0x00000528       0x30 app/out/libs/freertos/source/list.o
+ .debug_ranges  0x00000558      0x1e0 app/out/libs/freertos/source/queue.o
+ .debug_ranges  0x00000738       0x68 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+ .debug_ranges  0x000007a0       0x30 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
+ .debug_ranges  0x000007d0       0xa8 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+ .debug_ranges  0x00000878       0x90 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+ .debug_ranges  0x00000908       0x80 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+ .debug_ranges  0x00000988       0x38 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+ .debug_ranges  0x000009c0      0x108 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+ .debug_ranges  0x00000ac8       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+ .debug_ranges  0x00000b08       0x40 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
+ .debug_ranges  0x00000b48       0x10 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
+ .debug_ranges  0x00000b58       0x40 app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
+ .debug_ranges  0x00000b98       0x50 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+ .debug_ranges  0x00000be8       0x10 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
+ .debug_ranges  0x00000bf8       0xb8 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+ .debug_ranges  0x00000cb0       0xe0 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+ .debug_ranges  0x00000d90       0xc0 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+ .debug_ranges  0x00000e50       0x38 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
+ .debug_ranges  0x00000e88       0xc8 app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
+ .debug_ranges  0x00000f50       0x18 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
+ .debug_ranges  0x00000f68       0x28 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
+ .debug_ranges  0x00000f90       0x10 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
+ .debug_ranges  0x00000fa0       0x30 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
+ .debug_ranges  0x00000fd0       0x80 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+ .debug_ranges  0x00001050       0x28 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
+ .debug_ranges  0x00001078       0x28 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
+ .debug_ranges  0x000010a0      0x198 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+ .debug_ranges  0x00001238       0xb0 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+ .debug_ranges  0x000012e8       0x78 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
 
 .debug_macro    0x00000000    0x1021f
  .debug_macro   0x00000000      0x83d app/out/app/src/app.o
@@ -16404,116 +16406,116 @@ OUTPUT(app/out/app.elf elf32-littlearm)
  .debug_macro   0x0000fddb      0x42d app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
  .debug_macro   0x00010208       0x17 app/out/libs/vendor_libs/lpc_startup/src/crp.o
 
-.debug_line     0x00000000    0x1d7f6
- .debug_line    0x00000000     0x1b3a app/out/app/src/app.o
- .debug_line    0x00001b3a      0xa04 app/out/libs/freertos/MemMang/heap_1.o
- .debug_line    0x0000253e     0x1013 app/out/libs/freertos/source/timers.o
- .debug_line    0x00003551     0x26c6 app/out/libs/freertos/source/tasks.o
- .debug_line    0x00005c17      0x8fd app/out/libs/freertos/source/static_provider.o
- .debug_line    0x00006514      0xae4 app/out/libs/freertos/source/list.o
- .debug_line    0x00006ff8     0x1af4 app/out/libs/freertos/source/queue.o
- .debug_line    0x00008aec      0xb09 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
- .debug_line    0x000095f5      0xa0e app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
- .debug_line    0x0000a003      0xc7d app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
- .debug_line    0x0000ac80      0xaf1 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
- .debug_line    0x0000b771      0xe6f app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
- .debug_line    0x0000c5e0      0xb48 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
- .debug_line    0x0000d128     0x1258 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
- .debug_line    0x0000e380      0xb56 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
- .debug_line    0x0000eed6      0xdee app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
- .debug_line    0x0000fcc4      0x9fa app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
- .debug_line    0x000106be      0xb89 app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
- .debug_line    0x00011247      0x9d6 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
- .debug_line    0x00011c1d      0x8f3 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
- .debug_line    0x00012510      0xc8d app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
- .debug_line    0x0001319d      0xde9 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
- .debug_line    0x00013f86     0x1325 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
- .debug_line    0x000152ab      0x90b app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
- .debug_line    0x00015bb6     0x111e app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
- .debug_line    0x00016cd4      0x7ec app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
- .debug_line    0x000174c0      0x87f app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
- .debug_line    0x00017d3f      0x41b app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
- .debug_line    0x0001815a      0x8e0 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
- .debug_line    0x00018a3a      0xb5f app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
- .debug_line    0x00019599      0x9fe app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
- .debug_line    0x00019f97      0x873 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
- .debug_line    0x0001a80a     0x1517 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
- .debug_line    0x0001bd21      0xfaa app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
- .debug_line    0x0001cccb      0xae4 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
- .debug_line    0x0001d7af       0x47 app/out/libs/vendor_libs/lpc_startup/src/crp.o
+.debug_line     0x00000000    0x1d7c8
+ .debug_line    0x00000000     0x1b0c app/out/app/src/app.o
+ .debug_line    0x00001b0c      0xa04 app/out/libs/freertos/MemMang/heap_1.o
+ .debug_line    0x00002510     0x1013 app/out/libs/freertos/source/timers.o
+ .debug_line    0x00003523     0x26c6 app/out/libs/freertos/source/tasks.o
+ .debug_line    0x00005be9      0x8fd app/out/libs/freertos/source/static_provider.o
+ .debug_line    0x000064e6      0xae4 app/out/libs/freertos/source/list.o
+ .debug_line    0x00006fca     0x1af4 app/out/libs/freertos/source/queue.o
+ .debug_line    0x00008abe      0xb09 app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+ .debug_line    0x000095c7      0xa0e app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
+ .debug_line    0x00009fd5      0xc7d app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+ .debug_line    0x0000ac52      0xaf1 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+ .debug_line    0x0000b743      0xe6f app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+ .debug_line    0x0000c5b2      0xb48 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+ .debug_line    0x0000d0fa     0x1258 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+ .debug_line    0x0000e352      0xb56 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+ .debug_line    0x0000eea8      0xdee app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
+ .debug_line    0x0000fc96      0x9fa app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
+ .debug_line    0x00010690      0xb89 app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
+ .debug_line    0x00011219      0x9d6 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+ .debug_line    0x00011bef      0x8f3 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
+ .debug_line    0x000124e2      0xc8d app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+ .debug_line    0x0001316f      0xde9 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+ .debug_line    0x00013f58     0x1325 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+ .debug_line    0x0001527d      0x90b app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
+ .debug_line    0x00015b88     0x111e app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
+ .debug_line    0x00016ca6      0x7ec app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
+ .debug_line    0x00017492      0x87f app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
+ .debug_line    0x00017d11      0x41b app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
+ .debug_line    0x0001812c      0x8e0 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
+ .debug_line    0x00018a0c      0xb5f app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+ .debug_line    0x0001956b      0x9fe app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
+ .debug_line    0x00019f69      0x873 app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
+ .debug_line    0x0001a7dc     0x1517 app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+ .debug_line    0x0001bcf3      0xfaa app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+ .debug_line    0x0001cc9d      0xae4 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
+ .debug_line    0x0001d781       0x47 app/out/libs/vendor_libs/lpc_startup/src/crp.o
 
-.debug_str      0x00000000    0x2d8cd
- .debug_str     0x00000000    0x25551 app/out/app/src/app.o
-                              0x25a82 (size before relaxing)
- .debug_str     0x00025551      0x14a app/out/libs/freertos/MemMang/heap_1.o
+.debug_str      0x00000000    0x2d8d5
+ .debug_str     0x00000000    0x25559 app/out/app/src/app.o
+                              0x25a8a (size before relaxing)
+ .debug_str     0x00025559      0x14a app/out/libs/freertos/MemMang/heap_1.o
                               0x1c917 (size before relaxing)
- .debug_str     0x0002569b     0x179a app/out/libs/freertos/source/timers.o
+ .debug_str     0x000256a3     0x179a app/out/libs/freertos/source/timers.o
                               0x1e142 (size before relaxing)
- .debug_str     0x00026e35     0x1477 app/out/libs/freertos/source/tasks.o
+ .debug_str     0x00026e3d     0x1477 app/out/libs/freertos/source/tasks.o
                               0x1e867 (size before relaxing)
- .debug_str     0x000282ac       0xe8 app/out/libs/freertos/source/static_provider.o
+ .debug_str     0x000282b4       0xe8 app/out/libs/freertos/source/static_provider.o
                               0x18564 (size before relaxing)
- .debug_str     0x00028394       0x5d app/out/libs/freertos/source/list.o
+ .debug_str     0x0002839c       0x5d app/out/libs/freertos/source/list.o
                               0x1b94d (size before relaxing)
- .debug_str     0x000283f1      0x75f app/out/libs/freertos/source/queue.o
+ .debug_str     0x000283f9      0x75f app/out/libs/freertos/source/queue.o
                               0x1dc5f (size before relaxing)
- .debug_str     0x00028b50      0x6bc app/out/libs/freertos/source/portable/ARM_CM4F/port.o
+ .debug_str     0x00028b58      0x6bc app/out/libs/freertos/source/portable/ARM_CM4F/port.o
                               0x1a2c5 (size before relaxing)
- .debug_str     0x0002920c       0xf9 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
+ .debug_str     0x00029214       0xf9 app/out/libs/sapi/sapi_v0.5.2/soc/core/src/sapi_cyclesCounter.o
                               0x199da (size before relaxing)
- .debug_str     0x00029305      0x146 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
+ .debug_str     0x0002930d      0x146 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_gpio.o
                               0x19cb4 (size before relaxing)
- .debug_str     0x0002944b      0x373 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
+ .debug_str     0x00029453      0x373 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_sct.o
                               0x19d6b (size before relaxing)
- .debug_str     0x000297be      0x38a app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
+ .debug_str     0x000297c6      0x38a app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_timer.o
                               0x1a0e3 (size before relaxing)
- .debug_str     0x00029b48      0x119 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
+ .debug_str     0x00029b50      0x119 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_tick.o
                               0x1dccc (size before relaxing)
- .debug_str     0x00029c61      0x62e app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
+ .debug_str     0x00029c69      0x62e app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_uart.o
                               0x1a6c3 (size before relaxing)
- .debug_str     0x0002a28f      0x164 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
+ .debug_str     0x0002a297      0x164 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/src/sapi_pwm.o
                               0x19b02 (size before relaxing)
- .debug_str     0x0002a3f3      0x767 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
+ .debug_str     0x0002a3fb      0x767 app/out/libs/sapi/sapi_v0.5.2/soc/peripherals/usb/device/src/sapi_usb_device.o
                               0x1fb64 (size before relaxing)
- .debug_str     0x0002ab5a       0x43 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
+ .debug_str     0x0002ab62       0x43 app/out/libs/sapi/sapi_v0.5.2/board/src/sapi_board.o
                               0x19147 (size before relaxing)
- .debug_str     0x0002ab9d       0x93 app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
+ .debug_str     0x0002aba5       0x93 app/out/libs/sapi/sapi_v0.5.2/abstract_modules/src/sapi_delay.o
                               0x1904c (size before relaxing)
- .debug_str     0x0002ac30      0x329 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
+ .debug_str     0x0002ac38      0x329 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board_sysinit.o
                               0x19c2f (size before relaxing)
- .debug_str     0x0002af59       0x56 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
+ .debug_str     0x0002af61       0x56 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/sysinit.o
                               0x18e63 (size before relaxing)
- .debug_str     0x0002afaf      0x6dd app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
+ .debug_str     0x0002afb7      0x6dd app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/system.o
                               0x1964c (size before relaxing)
- .debug_str     0x0002b68c      0x7d1 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
+ .debug_str     0x0002b694      0x7d1 app/out/libs/vendor_libs/lpc_board_ciaa_edu_4337/src/board.o
                               0x1a271 (size before relaxing)
- .debug_str     0x0002be5d      0x442 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
+ .debug_str     0x0002be65      0x442 app/out/libs/vendor_libs/lpc_chip_43xx/src/ssp_18xx_43xx.o
                               0x15e4f (size before relaxing)
- .debug_str     0x0002c29f       0x83 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
+ .debug_str     0x0002c2a7       0x83 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_pwm_18xx_43xx.o
                               0x15aa9 (size before relaxing)
- .debug_str     0x0002c322      0x57b app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
+ .debug_str     0x0002c32a      0x57b app/out/libs/vendor_libs/lpc_chip_43xx/src/i2c_18xx_43xx.o
                               0x163f0 (size before relaxing)
- .debug_str     0x0002c89d       0x45 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
+ .debug_str     0x0002c8a5       0x45 app/out/libs/vendor_libs/lpc_chip_43xx/src/gpio_18xx_43xx.o
                               0x15410 (size before relaxing)
- .debug_str     0x0002c8e2       0xa6 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
+ .debug_str     0x0002c8ea       0xa6 app/out/libs/vendor_libs/lpc_chip_43xx/src/sct_18xx_43xx.o
                               0x15a33 (size before relaxing)
- .debug_str     0x0002c988       0xc9 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
+ .debug_str     0x0002c990       0xc9 app/out/libs/vendor_libs/lpc_chip_43xx/src/fpu_init.o
                                0x9955 (size before relaxing)
- .debug_str     0x0002ca51      0x115 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
+ .debug_str     0x0002ca59      0x115 app/out/libs/vendor_libs/lpc_chip_43xx/src/timer_18xx_43xx.o
                               0x1591a (size before relaxing)
- .debug_str     0x0002cb66      0x151 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
+ .debug_str     0x0002cb6e      0x151 app/out/libs/vendor_libs/lpc_chip_43xx/src/adc_18xx_43xx.o
                               0x15c59 (size before relaxing)
- .debug_str     0x0002ccb7      0x1c7 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
+ .debug_str     0x0002ccbf      0x1c7 app/out/libs/vendor_libs/lpc_chip_43xx/src/sysinit_18xx_43xx.o
                               0x1610f (size before relaxing)
- .debug_str     0x0002ce7e      0x12f app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
+ .debug_str     0x0002ce86      0x12f app/out/libs/vendor_libs/lpc_chip_43xx/src/chip_18xx_43xx.o
                               0x161ae (size before relaxing)
- .debug_str     0x0002cfad      0x3ee app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
+ .debug_str     0x0002cfb5      0x3ee app/out/libs/vendor_libs/lpc_chip_43xx/src/clock_18xx_43xx.o
                               0x16681 (size before relaxing)
- .debug_str     0x0002d39b      0x306 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
+ .debug_str     0x0002d3a3      0x306 app/out/libs/vendor_libs/lpc_chip_43xx/src/uart_18xx_43xx.o
                               0x162be (size before relaxing)
- .debug_str     0x0002d6a1      0x1e6 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
+ .debug_str     0x0002d6a9      0x1e6 app/out/libs/vendor_libs/lpc_startup/src/cr_startup_lpc43xx.o
                               0x19a4f (size before relaxing)
- .debug_str     0x0002d887       0x46 app/out/libs/vendor_libs/lpc_startup/src/crp.o
+ .debug_str     0x0002d88f       0x46 app/out/libs/vendor_libs/lpc_startup/src/crp.o
                                0x2e63 (size before relaxing)
 
 .comment        0x00000000       0x68
