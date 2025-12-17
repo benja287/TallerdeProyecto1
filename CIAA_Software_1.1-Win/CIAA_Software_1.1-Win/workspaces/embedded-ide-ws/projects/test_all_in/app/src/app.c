@@ -123,6 +123,43 @@ volatile uint8_t avoidTurnAngle = 150; // Angulo calculado dinamicamente
 // Snapshots de memoria
 volatile uint32_t old_d1 = 0, old_d2 = 0, old_d3 = 0;
 
+// --- PROTOCOLO BINARIO ---
+#define BIN_HEADER 0xA5
+#define BIN_FOOTER 0x5A
+#define FB_CMD_RUMBLE  0x01
+#define FB_CMD_LED     0x02
+
+struct ControlPacket {
+    uint8_t header;    
+    int8_t  joyX;      
+    int8_t  joyY;      
+    uint8_t throttle;  
+    uint8_t brake;     
+    uint8_t buttons;   
+    uint8_t checksum;  
+    uint8_t footer;    
+} __attribute__((packed));
+
+struct FeedbackPacket {
+    uint8_t header;    // 0x5B
+    uint8_t command;   
+    uint8_t val1;
+    uint8_t val2;
+    uint8_t val3;
+    uint8_t footer;    // 0xB5
+} __attribute__((packed));
+
+void sendFeedback(uint8_t cmd, uint8_t v1, uint8_t v2, uint8_t v3) {
+    struct FeedbackPacket fb;
+    fb.header = 0x5B;
+    fb.command = cmd;
+    fb.val1 = v1; fb.val2 = v2; fb.val3 = v3;
+    fb.footer = 0xB5;
+    
+    // Enviar bloqueo (poll) por simplicidad, o usar ISR TX
+    uartWriteByteArray(UART_232, (uint8_t*)&fb, sizeof(fb));
+}
+
 // ==============================================================================
 // FUNCIONES AUXILIARES
 // ==============================================================================
@@ -320,6 +357,8 @@ void set_servo_angle(uint8_t angle) {
     // El cambio tomara efecto en el siguiente ciclo de interrupcion (max 20ms)
 }
 
+// (Protocolo Binario definido arriba globalmente)
+
 // Tarea de Estado (Luces)
 void TaskStatus(void* taskParm) {
     // Configurar LEDs RGB
@@ -328,20 +367,22 @@ void TaskStatus(void* taskParm) {
     gpioConfig(LEDB, GPIO_OUTPUT);
     gpioConfig(LED1, GPIO_OUTPUT); // Heartbeat
 
+    uint8_t lastSentMode = 0xFF;
+
     while(1) {
-        // Actualizar RGB segun Modo (Mas visible que leds individuales)
+        // Actualizar LED RGB CIAA
         switch(currentMode) {
             case MODE_MANUAL:
-                // ROJO: Manual / Peligro / Atencion
                 gpioWrite(LEDR, ON); gpioWrite(LEDG, OFF); gpioWrite(LEDB, OFF);
+                if (lastSentMode != 0) { sendFeedback(FB_CMD_LED, 255, 0, 0); lastSentMode = 0; }
                 break;
             case MODE_SAFETY_STOP:
-                // VERDE: Seguro / Safety Check Active
                 gpioWrite(LEDR, OFF); gpioWrite(LEDG, ON); gpioWrite(LEDB, OFF);
+                if (lastSentMode != 1) { sendFeedback(FB_CMD_LED, 0, 255, 0); lastSentMode = 1; }
                 break;
             case MODE_AVOIDANCE:
-                // AZUL: Inteligencia / Evasion / Robot
                 gpioWrite(LEDR, OFF); gpioWrite(LEDG, OFF); gpioWrite(LEDB, ON);
+                if (lastSentMode != 2) { sendFeedback(FB_CMD_LED, 0, 0, 255); lastSentMode = 2; }
                 break;
         }
         
@@ -421,7 +462,7 @@ void onRx(void *noData) {
         }
         
         // Si detectamos fin de linea, notificar a la tarea de debodificacion
-        if (byte == '\n') {
+        if (byte == BIN_FOOTER) { // Notificar al recibir el footer del paquete binario
             // CRITICAL: Verificar que la tarea ha sido creada
             if (xUARTTaskHandle != NULL) {
                 BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -432,84 +473,84 @@ void onRx(void *noData) {
     }
 }
 
-// Tarea para decodificar el protocolo CSV
+// Tarea para decodificar el PROTOCOLO BINARIO
 void TaskUARTDecode(void* taskParm) {
     xUARTTaskHandle = xTaskGetCurrentTaskHandle();
     
-    // STATIC para no ocupar Stack
-    static char lineBuffer[128];
-    static uint8_t lineIdx = 0;
-    
+    // Buffer local para armar paquete
+    static uint8_t state = 0; // 0:WAIT_HEADER, 1:READ_DATA
+    static uint8_t rawBuf[8]; // sizeof(ControlPacket)
+    static uint8_t idx = 0;
+
     while(1) {
-        // Esperar notificacion de la ISR con TIMEOUT
-        // Si no llegan datos en 200ms, reseteamos las variables (Soft Timeout)
+        // Esperar notificacion de datos
         if (ulTaskNotifyTake(pdTRUE, 200 / portTICK_RATE_MS) == 0) {
-            // Timeout: Resetear valores a reposo
-            global_joy_x = 0;
-            global_joy_y = 0;
-            global_throttle = 0;
-            global_brake = 0;
-            continue; // Volver a esperar
+            // Timeout - Reset
+            global_joy_x = 0; global_joy_y = 0; global_throttle = 0; global_brake = 0;
+            continue;
         }
         
-        // Procesar todo lo que haya en el Ring Buffer
-        // ANTI-STARVATION: Procesar maximo 64 bytes por vuelta para ceder CPU
-        int processed_count = 0;
-        
-        while (rxTail != rxHead && processed_count++ < 64) {
+        while (rxTail != rxHead) {
             uint8_t byte = rxBuffer[rxTail];
             rxTail = (rxTail + 1) % RX_BUFFER_SIZE;
             
-            if (byte == '$') {
-                // Inicio de trama, resetear buffer lineal
-                lineIdx = 0;
-            } else if (byte == '\n') {
-                // Fin de trama, procesar
-                lineBuffer[lineIdx] = '\0';
-                
-                // Variables temporales para sscanf
-                int idx, dpad, btns, lx, ly, rx, ry, brk, thr, misc, gx, gy, gz, ax, ay, az;
-                
-                int count = sscanf(lineBuffer, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
-                                   &idx, &dpad, &btns, &lx, &ly, &rx, &ry, &brk, &thr, &misc, 
-                                   &gx, &gy, &gz, &ax, &ay, &az);
-                                   
-                if (count >= 10) { // Necesitamos hasta brk/thr
-                    // Actualizar variables globales de control
-                    global_joy_x = lx;
-                    global_joy_y = ly;
-                    global_throttle = thr;
-                    global_brake = brk;
-
-                    // --- DETECCION DE CAMBIO DE MODO (Triangulo) ---
-                    static uint16_t last_btns = 0;
-                    // Detectar flanco ascendente (Rising Edge)
-                    if ((btns & BTN_TRIANGLE_MASK) && !(last_btns & BTN_TRIANGLE_MASK)) {
-                        if (currentMode == MODE_MANUAL) currentMode = MODE_SAFETY_STOP;
-                        else if (currentMode == MODE_SAFETY_STOP) currentMode = MODE_AVOIDANCE;
-                        else currentMode = MODE_MANUAL;
-                        
-                        printf(">> CAMBIO MODO: %s (Btns: %d)\r\n", MODE_NAMES[currentMode], btns);
+            // MAQUINA DE ESTADOS BINARIA
+            switch (state) {
+                case 0: // WAIT HEADER
+                    if (byte == BIN_HEADER) {
+                        idx = 0;
+                        rawBuf[idx++] = byte;
+                        state = 1;
                     }
-                    last_btns = btns;
-
-                    // Debug intermitente (cada 20 updates, aprox 1 seg)
-                    static int debug_cnt = 0;
-
-                    if (debug_cnt++ > 20) {
-                         debug_cnt = 0;
-                         printf("Parsed: thr=%d, brk=%d\r\n", thr, brk);
+                    break;
+                    
+                case 1: // READ DATA
+                    rawBuf[idx++] = byte;
+                    if (idx >= 8) { // Packet Completed (8 bytes)
+                        // Validar Footer
+                        if (rawBuf[7] == BIN_FOOTER) {
+                            // Validar Checksum (XOR Fields: idx 1 to 6)
+                            // Fields: joyX(1), joyY(2), thr(3), brk(4), btns(5) -> Checksum es idx 6?
+                            // struct: Header, jX, jY, Thr, Brk, Btns, Cksum, Footer
+                            // Indices: 0,      1,  2,   3,   4,    5,    6,      7
+                            // Checksum se calculo con: jX^jY^Thr^Brk^Btns
+                            uint8_t calc = rawBuf[1] ^ rawBuf[2] ^ rawBuf[3] ^ rawBuf[4] ^ rawBuf[5];
+                            
+                            if (calc == rawBuf[6]) {
+                                // PAQUETE VALIDO -> MAPEAR A GLOBALES
+                                struct ControlPacket *pkt = (struct ControlPacket*)rawBuf;
+                                
+                                // Map int8 (-127..127) to System (-512..512)
+                                // -127 * 4 = -508. Aprox OK.
+                                global_joy_x = (int16_t)pkt->joyX * 4; 
+                                global_joy_y = (int16_t)pkt->joyY * 4;
+                                
+                                // Map uint8 (0..255) to System (0..1023)
+                                global_throttle = (uint16_t)pkt->throttle * 4; 
+                                global_brake    = (uint16_t)pkt->brake * 4;
+                                
+                                // Botones
+                                uint8_t btns = pkt->buttons;
+                                // Detectar cambio de Modo (Triangulo)
+                                static uint8_t lastTriangle = 0;
+                                uint8_t currTriangle = (btns & 0x08) ? 1 : 0; // Bit 3 es Triangulo en ESP32
+                                
+                                if (currTriangle && !lastTriangle) {
+                                    // Cambiar Modo Ciclico
+                                    if(currentMode == MODE_MANUAL) currentMode = MODE_SAFETY_STOP;
+                                    else if(currentMode == MODE_SAFETY_STOP) currentMode = MODE_AVOIDANCE;
+                                    else currentMode = MODE_MANUAL;
+                                }
+                                lastTriangle = currTriangle;
+                                
+                            } else {
+                                // Checksum Fail
+                                // printf("Cksum Fail\r\n");
+                            }
+                        }
+                        state = 0; // Reset para buscar siguiente Header
                     }
-                } else {
-                     printf("Parse Err: count=%d. Line: %s\r\n", count, lineBuffer);
-                }
-                
-                lineIdx = 0; // Reset para seguridad
-            } else {
-                // Caracter normal, agregar al buffer
-                if (lineIdx < sizeof(lineBuffer) - 1) {
-                    lineBuffer[lineIdx++] = byte;
-                }
+                    break;
             }
         }
     }
@@ -593,6 +634,9 @@ void TaskMotors(void* taskParm) {
                     
                     // 2. Trigger Check: Pared cerca (<20cm) Y Acelerando
                     if (min_dist < 20 && target_pwm_signed > 0) {
+                        // HAPTIC FEEDBACK: Vibracion Media
+                        sendFeedback(FB_CMD_RUMBLE, 30, 200, 0); // 300ms, Fuerza Alta
+                        
                         // INICIAR MANIOBRA
                         avoidState = AVOID_REVERSING;
                         avoid_timer = 0;
@@ -654,6 +698,9 @@ void TaskMotors(void* taskParm) {
                     // Si mientras esquivamos nos encontramos OTRA pared (<20cm)
                     if (min_dist < 20) {
                          // ABORTAR y REINICIAR CICLO
+                         // HAPTIC FEEDBACK: Vibracion Fuerte!
+                         sendFeedback(FB_CMD_RUMBLE, 50, 255, 0); // 500ms, Fuerza Max
+                         
                          printf("RECURSIVE ABORT! Wall Hit.\r\n");
                          avoidState = AVOID_REVERSING; // Volver a atras
                          avoid_timer = 0;
