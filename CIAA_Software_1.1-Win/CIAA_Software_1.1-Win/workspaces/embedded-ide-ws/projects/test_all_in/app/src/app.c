@@ -156,8 +156,11 @@ void sendFeedback(uint8_t cmd, uint8_t v1, uint8_t v2, uint8_t v3) {
     fb.val1 = v1; fb.val2 = v2; fb.val3 = v3;
     fb.footer = 0xB5;
     
-    // Enviar bloqueo (poll) por simplicidad, o usar ISR TX
+    // CRITICAL: Proteger el recurso UART compartido para evitar race conditions
+    // si dos tareas intentan enviar datos al mismo tiempo.
+    portENTER_CRITICAL();
     uartWriteByteArray(UART_232, (uint8_t*)&fb, sizeof(fb));
+    portEXIT_CRITICAL();
 }
 
 // ==============================================================================
@@ -568,7 +571,10 @@ void TaskMotors(void* taskParm) {
     // Inicializar PWM hardware
     // Nota: La config de frecuencia se hace en main
     
-#define RAMP_STEP 25 // Paso de rampa (25 * 50Hz = 1250 units/s => 255/1250 = ~0.2s full scale)
+// 255/100 = ~2.5 frames. 50Hz -> 20ms. 2.5 * 20ms = 50ms (Muy Rapido response)
+// Anterior: 25 * 200Hz = 5000 units/s.
+// Nuevo: 100 * 50Hz = 5000 units/s. (Misma fisica)
+#define RAMP_STEP 100 
 
     gpioWrite(MOTOR_STBY, ON); // Activar driver
     
@@ -615,8 +621,11 @@ void TaskMotors(void* taskParm) {
             avoidState = AVOID_IDLE;
         }
 
-#define MANEUVER_90_TIME_MS 1500 // Tiempo estimado para giro de 90 grados y retroceso seguro
-#define MANEUVER_TICKS      (MANEUVER_90_TIME_MS / 5) // 5ms per tick
+// Tuneado para 50Hz (20ms)
+// Antes: 1500ms / 5ms = 300 ticks
+// Ahora: 1500ms / 20ms = 75 ticks
+#define MANEUVER_90_TIME_MS 1500 
+#define MANEUVER_TICKS      (MANEUVER_90_TIME_MS / 20) 
 
         if (currentMode == MODE_SAFETY_STOP) {
             // -- Lógica Safety Stop --
@@ -681,7 +690,8 @@ void TaskMotors(void* taskParm) {
                 case AVOID_TURNING:
                     // Stop mientras las ruedas giran al angulo calculado
                     target_pwm_signed = 0; 
-                    if (avoid_timer++ > 100) { // 500ms
+                    // Antes 500ms = 100 ticks (5ms). Ahora 500ms = 25 ticks (20ms)
+                    if (avoid_timer++ > 25) { 
                         avoidState = AVOID_FORWARDING;
                         avoid_timer = 0;
                     }
@@ -692,8 +702,9 @@ void TaskMotors(void* taskParm) {
                     target_pwm_signed = 150;
                     
                     // --- SEGURIDAD RECURSIVA ---
-                    // "Tiempo de Gracia": Ignorar sensores los primeros 500ms (100 ticks)
-                    if (avoid_timer > 100) { 
+                    // "Tiempo de Gracia": Ignorar sensores los primeros 500ms 
+                    // Antes 100 ticks. Ahora 25 ticks.
+                    if (avoid_timer > 25) { 
                         // Si mientras esquivamos nos encontramos OTRA pared (<20cm)
                         if (min_dist < 20) {
                              // ABORTAR y REINICIAR CICLO
@@ -750,13 +761,8 @@ void TaskMotors(void* taskParm) {
             // LED Feedback removido
         }
         
-        static int m_debug = 0;
-        if (m_debug++ > 50) { // 1 seg
-            m_debug = 0;
-            printf("Motors: Tgt=%d, Curr=%d\r\n", target_pwm_signed, current_pwm_signed);
-        }
-        
-        vTaskDelay(5 / portTICK_RATE_MS); // 200Hz control loop (Ultra Fast)
+        // Ticks ajustados para delay de 20ms
+        vTaskDelay(20 / portTICK_RATE_MS); // 50Hz control loop (Standard)
     }
 }
 // --- SERVO LIMITS ---
