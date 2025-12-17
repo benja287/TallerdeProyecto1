@@ -436,8 +436,9 @@ void onRx(void *noData) {
 void TaskUARTDecode(void* taskParm) {
     xUARTTaskHandle = xTaskGetCurrentTaskHandle();
     
-    char lineBuffer[128];
-    uint8_t lineIdx = 0;
+    // STATIC para no ocupar Stack
+    static char lineBuffer[128];
+    static uint8_t lineIdx = 0;
     
     while(1) {
         // Esperar notificacion de la ISR con TIMEOUT
@@ -452,7 +453,10 @@ void TaskUARTDecode(void* taskParm) {
         }
         
         // Procesar todo lo que haya en el Ring Buffer
-        while (rxTail != rxHead) {
+        // ANTI-STARVATION: Procesar maximo 64 bytes por vuelta para ceder CPU
+        int processed_count = 0;
+        
+        while (rxTail != rxHead && processed_count++ < 64) {
             uint8_t byte = rxBuffer[rxTail];
             rxTail = (rxTail + 1) % RX_BUFFER_SIZE;
             
@@ -775,8 +779,9 @@ void TaskServo(void* taskParm) {
 void App_StartSystem(void) {
     // Crear tareas del sistema normal
     xTaskCreate(TaskStatus,  "Status",  128, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(TaskSensors, "Sensors", 512, NULL, tskIDLE_PRIORITY + 2, NULL);
-    xTaskCreate(TaskUARTDecode, "Decoder", 512, NULL, tskIDLE_PRIORITY + 3, NULL); // Prioridad alta para vaciar buffer
+    xTaskCreate(TaskSensors, "Sensors", 384, NULL, tskIDLE_PRIORITY + 2, NULL); // Optimizado
+    // STACK AJUSTADO para equilibrar memoria y seguridad
+    xTaskCreate(TaskUARTDecode, "Decoder", 640, NULL, tskIDLE_PRIORITY + 3, NULL); 
     xTaskCreate(TaskMotors,  "Motors",  256, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(TaskServo,   "Servo",   256, NULL, tskIDLE_PRIORITY + 1, NULL);
 }
