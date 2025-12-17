@@ -1,5 +1,5 @@
-app/out/app/src/app.o: app/src/app.c \
- libs/sapi/sapi_v0.5.2/base/inc/sapi.h \
+app/out/app/src/test_hardware.o: app/src/test_hardware.c \
+ app/inc/test_hardware.h libs/sapi/sapi_v0.5.2/base/inc/sapi.h \
  libs/sapi/sapi_v0.5.2/base/inc/sapi_datatypes.h \
  libs/vendor_libs/lpc_chip_43xx/inc/chip.h \
  libs/vendor_libs/lpc_chip_43xx/inc/config_43xx/sys_config.h \
@@ -124,6 +124,4 @@ app/out/app/src/app.o: app/src/app.c \
  libs/freertos/include/private/deprecated_definitions.h \
  libs/freertos/source/portable/ARM_CM4F/portmacro.h \
  libs/freertos/include/private/mpu_wrappers.h \
- libs/freertos/include/task.h libs/freertos/include/private/list.h \
- app/inc/test_hardware.h \
- libs/sapi/sapi_v0.5.2/soc/peripherals/inc/sapi_timer.h
+ libs/freertos/include/task.h libs/freertos/include/private/list.h

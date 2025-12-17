@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "test_hardware.h" // Modulo de Test
 
 // ==============================================================================
 // DEFINICIONES DE HARDWARE
@@ -121,7 +122,7 @@ static TaskHandle_t xUARTTaskHandle = NULL;
 // ==============================================================================
 
 // Manejadores de Tareas para notificaciones
-static TaskHandle_t xSensorTaskHandle = NULL;
+TaskHandle_t xSensorTaskHandle = NULL;
 
 // Variables volatiles para ISR
 volatile uint32_t start_cycles_s1 = 0;
@@ -210,9 +211,11 @@ void GPIO0_IRQHandler(void) {
         dist1_cm = (uint32_t)(us / 58.0);
         
         // Notificar tarea
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(xSensorTaskHandle, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        if (xSensorTaskHandle != NULL) {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            vTaskNotifyGiveFromISR(xSensorTaskHandle, &xHigherPriorityTaskWoken);
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
     }
 }
 
@@ -301,37 +304,41 @@ void set_servo_angle(uint8_t angle) {
 
 // Tarea de Estado (Luces)
 void TaskStatus(void* taskParm) {
-    // Configurar LEDs de estado
-    gpioConfig(LED1, GPIO_OUTPUT);
-    gpioConfig(LED2, GPIO_OUTPUT);
-    gpioConfig(LED3, GPIO_OUTPUT);
+    // Configurar LEDs RGB
+    gpioConfig(LEDR, GPIO_OUTPUT);
+    gpioConfig(LEDG, GPIO_OUTPUT);
+    gpioConfig(LEDB, GPIO_OUTPUT);
+    gpioConfig(LED1, GPIO_OUTPUT); // Heartbeat
 
     while(1) {
-        // Actualizar LEDs segun Modo
+        // Actualizar RGB segun Modo (Mas visible que leds individuales)
         switch(currentMode) {
             case MODE_MANUAL:
-                gpioWrite(LED1, ON);
-                gpioWrite(LED2, OFF);
-                gpioWrite(LED3, OFF);
+                // ROJO: Manual / Peligro / Atencion
+                gpioWrite(LEDR, ON); gpioWrite(LEDG, OFF); gpioWrite(LEDB, OFF);
                 break;
             case MODE_SAFETY_STOP:
-                gpioWrite(LED1, OFF);
-                gpioWrite(LED2, ON); 
-                gpioWrite(LED3, OFF);
+                // VERDE: Seguro / Safety Check Active
+                gpioWrite(LEDR, OFF); gpioWrite(LEDG, ON); gpioWrite(LEDB, OFF);
                 break;
             case MODE_AVOIDANCE:
-                gpioWrite(LED1, OFF);
-                gpioWrite(LED2, OFF);
-                gpioWrite(LED3, ON);
+                // AZUL: Inteligencia / Evasion / Robot
+                gpioWrite(LEDR, OFF); gpioWrite(LEDG, OFF); gpioWrite(LEDB, ON);
                 break;
         }
         
-        // Blink del LEDB como health check
-        gpioToggle(LEDB);
+        // Blink lento de LED1 como "Heartbeat" (Sistema vivo)
+        static int hb_cnt = 0;
+        if(hb_cnt++ > 5) { // Cada 5x200ms = 1s
+            hb_cnt = 0;
+            gpioToggle(LED1);
+        }
         
         vTaskDelay(200 / portTICK_RATE_MS); // 5Hz update
     }
 }
+
+
 
 
 void TaskSensors(void* taskParm) {
@@ -574,7 +581,7 @@ void TaskMotors(void* taskParm) {
             gpioWrite(MOTOR_BIN1, ON); gpioWrite(MOTOR_BIN2, OFF);
             pwmWrite(PWMA_PIN, (uint8_t)current_pwm_signed);
             pwmWrite(PWMB_PIN, (uint8_t)current_pwm_signed);
-            gpioWrite(LEDG, ON); gpioWrite(LEDR, OFF);
+            // LED Feedback removido para usar RGB en MODOS
             
         } else if (current_pwm_signed < 0) {
             // Reversa
@@ -583,12 +590,12 @@ void TaskMotors(void* taskParm) {
             // Invertir para PWM absoluto
             pwmWrite(PWMA_PIN, (uint8_t)(-current_pwm_signed));
             pwmWrite(PWMB_PIN, (uint8_t)(-current_pwm_signed));
-            gpioWrite(LEDR, ON); gpioWrite(LEDG, OFF);
+            // LED Feedback removido
             
         } else {
             // Stop
             pwmWrite(PWMA_PIN, 0); pwmWrite(PWMB_PIN, 0);
-            gpioWrite(LEDG, OFF); gpioWrite(LEDR, OFF);
+            // LED Feedback removido
         }
         
         static int m_debug = 0;
@@ -672,6 +679,15 @@ void TaskServo(void* taskParm) {
 }
 
 
+void App_StartSystem(void) {
+    // Crear tareas del sistema normal
+    xTaskCreate(TaskStatus,  "Status",  128, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(TaskSensors, "Sensors", 512, NULL, tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(TaskUARTDecode, "Decoder", 512, NULL, tskIDLE_PRIORITY + 3, NULL); // Prioridad alta para vaciar buffer
+    xTaskCreate(TaskMotors,  "Motors",  256, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(TaskServo,   "Servo",   256, NULL, tskIDLE_PRIORITY + 1, NULL);
+}
+
 // ==============================================================================
 // MAIN
 // ==============================================================================
@@ -716,14 +732,15 @@ int main(void) {
 
     printf("Sistema iniciado: Motores PWM Hardware + Servo Timer0 IRQ + UART232 ESP32\r\n");
     
-    // Crear tareas
-    // Crear tareas
-    xTaskCreate(TaskStatus,  "Status",  128, NULL, tskIDLE_PRIORITY + 1, NULL);
-
-    xTaskCreate(TaskSensors, "Sensors", 512, NULL, tskIDLE_PRIORITY + 2, NULL);
-    xTaskCreate(TaskUARTDecode, "Decoder", 512, NULL, tskIDLE_PRIORITY + 3, NULL); // Prioridad alta para vaciar buffer
-    xTaskCreate(TaskMotors,  "Motors",  256, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(TaskServo,   "Servo",   256, NULL, tskIDLE_PRIORITY + 1, NULL);
+    // Decision de Arranque
+    #ifdef ENABLE_HARDWARE_TEST
+        printf(">>> MODO TEST DE HARDWARE ACTIVADO <<<\r\n");
+        // Crear Solo la tarea de Test. Esta tarea lanzara App_StartSystem si todo sale bien.
+        xTaskCreate(TaskHardwareTest, "HwTest", 512, NULL, tskIDLE_PRIORITY + 4, NULL);
+    #else
+        printf(">>> MODO NORMAL <<<\r\n");
+        App_StartSystem();
+    #endif
 
     // Iniciar Scheduler
     vTaskStartScheduler();
