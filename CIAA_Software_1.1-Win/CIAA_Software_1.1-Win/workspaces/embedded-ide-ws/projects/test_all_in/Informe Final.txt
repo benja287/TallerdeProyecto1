@@ -1,0 +1,1788 @@
+﻿Vehículo Semiautónomo con Detección de Obstáculos
+
+
+Universidad Nacional de La Plata
+Facultad de Ingeniería
+Taller de Proyecto I
+
+
+Informe final
+3 de noviembre de 2025
+
+
+Grupo 7
+Alcayaga, Ezequiel Rodrigo  (00697/3)
+Bermúdez, Lautaro Joaquín (01399/0)
+Handula, Facundo (03204/9)
+Rodriguez Mantilla, Alexis Benjamin (00894/6)
+                         
+
+
+
+
+
+
+
+
+
+
+1.Introducción
+La motivación de este proyecto es construir un auto a escala que además de controlarse manualmente con un control remoto, sea capaz de tomar decisiones básicas por sí mismo. Actualmente, algunos autos en el mercado incorporan tecnologías como el frenado automático y la asistencia de manejo. Se intenta llevar esa idea a un nivel más simple y educativo, usando un vehículo pequeño capaz de detectar obstáculos, esquivar automáticamente  y asistir al usuario en la conducción.
+Este proyecto toma como base desarrollos previos realizados en el control remoto de vehículos mediante Bluetooth [1], pero incorporando capacidades semiautónomas para la detección y evasión de obstáculos. La inspiración inicial para el sistema de detección de obstáculos surgió de implementaciones básicas de robots esquiva obstáculos con Arduino [2].
+El auto tendrá un sistema de dirección tipo karting, donde el eje delantero gira gracias a un servomotor. De esta manera podrá doblar de forma precisa. La tracción estará dada por dos motores en las ruedas traseras, permitiendo mover el vehículo hacia adelante y atrás.
+Para la asistencia a la conducción, el vehículo contará con sensores de distancia encargados de medir la proximidad a obstáculos. El primero estará ubicado en la parte frontal, permitiendo detectar obstáculos en línea recta, complementado con sensores colocados en ángulos laterales (por ejemplo, a 45° respecto al frente).Esta configuración mejora significativamente la detección respecto a implementaciones que utilizan un único sensor montado sobre un servomotor [2], proporcionando mayor velocidad de detección y eliminando puntos ciegos temporales.
+Con la información combinada de estos sensores y el cálculo de la velocidad, el vehículo podrá decidir entre avanzar normalmente, reducir la velocidad o  esquivar automáticamente el obstáculo mediante maniobras de evasión. Una vez completada la maniobra, el usuario podrá retomar el control manual.
+Una vez que el usuario retome el control manual lo hará con un joystick inalámbrico, que se comunica mediante una interfaz serie (UART) y permitirá manejar el vehículo en cualquier dirección.
+Como idea de desarrollo futuro, se puede explorar la incorporación de más o mejores sensores (por ejemplo lidar) para tener una visión completa del entorno y lograr planificar rutas, navegar el entorno y esquivar obstáculos de manera completamente autónoma.
+2.Objetivos del Proyecto
+2.1 Objetivos Primarios (Conducción Asistida)
+1. Que el vehículo pueda avanzar de forma normal mientras no se detecten obstáculos en su camino.
+2. Que al acercarse a un obstáculo reduzca la velocidad progresivamente y esquive automáticamente el obstáculo mediante maniobras de evasión.
+3. Que el sistema emita una señal visual (por ejemplo, un LED indicador) cuando el vehículo detecte un obstáculo y ejecute la maniobra de evasión.
+4. Que el usuario pueda retomar el control del vehículo tras la maniobra de evasión usando el mismo joystick inalámbrico.
+2.2 Objetivos Secundarios (Autonomía Avanzada)
+1. Ampliar la percepción del entorno colocando más sensores de distancia en distintos ángulos o usando sensores más complejos como un Lidar. Con esta disposición el vehículo tendría una visión más amplia y podría detectar obstáculos a 360°.
+2. Complementar el sistema de evasión automática de obstáculos para que el auto pueda tomar decisiones más avanzadas como elegir la mejor estrategia de evasión según el tipo de obstáculo.
+3. Implementar algoritmos de planificación de rutas, como A*, que aprovechen los datos obtenidos del escaneo o de múltiples sensores para que el vehículo pueda calcular trayectorias completas y dirigirse hacia un destino evitando obstáculos en el camino.
+4. Mejorar la precisión del movimiento añadiendo sensores complementarios, como un magnetómetro (para conocer la orientación del vehículo) y encoders en las ruedas (para medir la distancia recorrida con más exactitud).
+2.3 Descripción técnica-conceptual del sistema:
+  
+
+Figura 1. Diagrama en bloques del sistema a desarrollar.
+
+
+El sistema se compone de:
+1.Control central (EDU-CIAA-NXP): ejecuta los algoritmos de detección de obstáculos, control de velocidad, evasión automática y la máquina de estados que coordina el comportamiento del vehículo
+2.Sistema de comunicación inalámbrica: control PS3/PS4 conectado vía Bluetooth Classic al ESP32, que transmite comandos del usuario mediante UART a la EDU-CIAA
+3.Sensores ultrasónicos HC-SR04: tres sensores (frontal y dos laterales a 45°) proporcionan medición de distancias para detección temprana de obstáculos
+4.Sistema de tracción: dos motores DC TT controlados mediante puente H TB6612FNG con control PWM independiente, permitiendo diferencial electrónico y suavizado de aceleración (rampa de PWM).
+5.Sistema de dirección: servomotor S3003 controla el ángulo de las ruedas delanteras tipo karting mediante señales PWM por hardware.
+6.Indicadores: Se utilizan los LEDs integrados en la EDU-CIAA como indicadores visuales del estado del sistema (alertas de detección de obstáculos, modos de operación, errores, etc.).
+Al diseñar la placa se uso los Leds, ya que forman parte de la interfaz de usuario y deben poder observarse  durante el funcionamiento del vehículo
+7.Alimentación: Sistema de baterías de litio 18650 (2×3.7V en serie = 7.4V) regulado a 5V mediante módulo XL4016, capaz de entregar hasta 8-9A para cubrir los picos de consumo del vehículo[a]
+3.Análisis de Requerimientos
+3.1 Requerimientos de hardware
+1. El vehículo debe contar con un chasis de base  que permita montar los motores, el servomotor de dirección, los sensores, las baterías   y la placa de control.
+2. El vehículo debe contar con un sistema de tracción mediante motores eléctricos que permitan avanzar y retroceder. Se utilizarán los motores DC TT.
+3. El sistema de dirección debe estar controlado por un servomotor que permite realizar giros precisos. Se cuenta con el  Servo S3003. 
+4. Se debe incorporar al menos un sensor de distancia orientado hacia el frente, capaz de medir la proximidad de obstáculos.Se implementarán tres sensores HC-SR04: uno frontal y dos laterales a 45°.
+5. El vehículo debe contar con un módulo de control de motores (puente H) que permita variar la velocidad y sentido de giro.Se utilizará el TB6612FNG por su alta eficiencia (97%) y bajo consumo.
+6. El sistema debe incluir indicadores visuales (ej. LEDs ) para notificar al usuario.
+7. El auto se alimenta con dos baterías de litio 18650 (3.7V c/u) conectadas en serie (7.4V), reguladas a 5V mediante módulo XL4016.[b]
+8. Un módulo de joystick inalámbrico. Se empleará un control PS4/PS5 existente.
+9. Módulos de transmisión inalámbrica para la comunicación entre el control y el auto. ESP32-WROOM-32 con Bluetooth Classic + librería BluePad32
+10. PCB personalizado diseñado y fabricado para integración de todos los componentes.
+11. (Opcional) Se podrán sumar sensores de distancia adicionales, un magnetómetro o encoders en las ruedas, siempre que el tiempo y los recursos lo permitan.
+3.2 Requerimientos de software
+1. El software debe estar implementado en lenguaje C sobre la plataforma de la EDU-CIAA.
+2. El sistema debe leer periódicamente la información del sensor ultrasónico y calcular la distancia a los obstáculos de manera no bloqueante. Se usará Timer Capture para medición precisa de los pulsos ECHO.
+3. Debe existir un algoritmo de control que reduzca la velocidad y ejecute maniobras de evasión automática ante obstáculos.
+4. El sistema debe procesar en tiempo real la señal de un joystick inalámbrico. La comunicación ESP32-EDU-CIAA será mediante UART2 a 115200 baudios
+5. El sistema debe implementar un algoritmo de suavizado de aceleración (rampa de PWM) para evitar arranques bruscos que puedan dañar la mecánica o provocar derrapes.
+6. (Opcional) En etapas avanzadas, el software podrá integrar la información de múltiples sensores y aplicar algoritmos de evasión o planificación de rutas (ej. A*).
+3.3 Requerimientos no funcionales
+1. Plataforma: el desarrollo se implementará sobre la EDU-CIAA-NXP, que será la unidad central de control.
+2. Seguridad:el vehículo debe garantizar la evasión segura de obstáculos y tener control frente a la pérdida de conectividad.
+3. Tiempo de respuesta: el sistema debe reaccionar lo suficientemente rápido para evitar la colisión ante la detección de un obstáculo.
+4. Eficiencia energética:El sistema de baterías 18650 (2×3.7V en serie = 7.4V regulado a 5V mediante XL4016) debe permitir un funcionamiento continuo de al menos 1 hora. El sistema estimado proporciona autonomía suficiente considerando el consumo total y la capacidad de las baterías seleccionadas.[c]
+5. Mantenibilidad: el software deberá tener estructura modular para facilitar ampliaciones futuras.
+6. Confiabilidad: el sistema debe ser robusto frente a pequeñas fallas de lectura de los sensores y pérdidas momentáneas de comunicación
+7. Restricción temporal: el proyecto y su documentación deberán estar finalizados dentro de la cursada de Taller de Proyecto I (año 2025). Debe cumplir también con los hitos en el cronograma estipulado por la cátedra, esto es la entrega de los informes de avances con lo que se exija en ellos.
+4. Diseño de Hardware
+El diseño se basa en el diagrama en bloques definido en los objetivos. La EDU-CIAA-NXP con su microcontrolador LPC4337 actúa como núcleo central, integrando todos los subsistemas y ejecutando los algoritmos de control.
+Placa EDU-CIAA-NXP
+Es el  microcontrolador principal que gestiona entradas/salidas, lógica de control y algoritmos de detección y evasión de obstáculos. Especificaciones técnicas:
+* Procesador: NXP LPC4337JBD144 (Cortex-M4 @ 204MHz + Cortex-M0)
+* Memoria: 1MB Flash, 264KB SRAM
+* Alimentación: 5V vía USB o conector externo, regulado a 3.3V (800mA)
+* Interfaces: 9 GPIO, 9 canales PWM, 3 UART, SPI, I2C, CAN, Ethernet, 2 USB
+* ADC: 4 canales de 12 bits
+* Periféricos integrados: 4 botones táctiles, 3 LEDs + 1 LED RGB
+Sensores Ultrasónicos HC-SR04
+El sistema utiliza tres sensores HC-SR04 para la detección de obstáculos: uno frontal y dos laterales a 45°.
+Se eligieron principalmente por su amplio rango de medición (2 a 400 cm), que permite detectar obstáculos a mayor distancia en comparación con otras alternativas como el sensor infrarrojo GP2Y0A21YK (10 a 80 cm).
+Además, ofrecen buena precisión (±3 mm), bajo costo, poco consumo de corriente (15 mA) y no se ven afectados por la luz ambiental, lo que los hace más confiables en distintas condiciones de iluminación.
+Otra ventaja es su compatibilidad directa con los niveles lógicos de la EDU-CIAA y la facilidad de implementación, ya que solo requieren señales digitales de disparo (TRIG) y lectura (ECHO).
+          Su consumo es de 15 mA a 5V. Dado que la EDU-CIAA trabaja con niveles lógicos de 3.3V, se incorporaron divisores resistivos (10kΩ/20kΩ) en el PCB para adaptar la señal ECHO de 5V a 3.3V y así garantizar una conexión segura con las entradas del microcontrolador.
+Característica
+	HC-SR04 (Elegido)
+	Sensor Infrarrojo (GP2Y0A21YK)
+	Rango de medición
+	2-400 cm
+	10-80 cm
+	Precisión
+	±3mm
+	±1cm
+	Consumo
+	15mA (operación), <2mA (reposo)
+	12mA continuo
+	Costo
+	$2-3 USD
+	$8-12 USD
+	Interferencia luz
+	No afectado
+	Afectado por luz solar
+	Ciclo de medición
+	60ms mínimo recomendado
+	38 ms continuo
+	Ángulo detección
+	15°
+	35°
+	Voltaje operación
+	3.3V-5V(compatible power bank)
+	5V únicamente
+	Área objetivo mínima
+	0.5m² (superficie lisa)
+	Sin restricción específica
+	Condiciones ambientales
+	Afectado por viento/humedad
+	Estable en interiores
+	Motores DC TT
+Dos motores DC TT controlan el desplazamiento del vehículo y permiten realizar un diferencial de velocidad entre ambas ruedas traseras, de modo que en una curva la rueda interior gira más lento y la exterior más rápido, logrando giros más suaves y estables.
+Se eligieron principalmente por su velocidad de respuesta inmediata, facilidad de control mediante PWM y bajo consumo de corriente, características que los hacen ideales para un sistema educativo y de control semiautónomo.
+En comparación, los motores paso a paso requieren un control más complejo y presentan una respuesta lenta por pasos discretos, mientras que los servomotores continuos, aunque ofrecen mayor torque, tienen un consumo mucho más alto y mayor peso, lo que no resulta conveniente para un vehículo pequeño alimentado por las  baterías.
+El modelo TT seleccionado, con relación de engranajes 1:48, ofrece un equilibrio adecuado entre velocidad y torque, permitiendo un movimiento fluido y suficiente fuerza de tracción para las maniobras de evasión.
+Además, su compatibilidad directa con señales PWM de la EDU-CIAA simplifica la implementación del control de velocidad sin necesidad de controladores adicionales.
+
+
+
+
+	Motor DC TT 6V (Elegido)
+	Motor Paso a Paso
+	Servomotor Continuo
+	Velocidad respuesta
+	Muy rápida (instantánea)
+	Lenta (pasos discretos)
+	Rápida
+	Velocidad @ 5V
+	75 RPM (3V), 165 RPM (5V)
+	Variable por pasos
+	Variable por PWM
+	Velocidad @ 6V
+	90 RPM (3V), 200 RPM (6V)
+	Variable por pasos
+	Variable por PWM
+	Consumo @ 5V
+	60 mA carga, 200 mA máximo
+	300-500 mA por fase
+	1.2-2.5A
+	Torque @ 5V
+	Reducido vs 6V pero suficiente
+	Torque constante
+	Alto torque
+	Control velocidad
+	PWM simple
+	Control complejo
+	Control complejo
+	Relación engranajes
+	1:48 (estándar TT)
+	Sin engranajes
+	Sin engranajes
+	Voltaje operación
+	3V - 6V
+	5V - 12V típico
+	4.8V - 7.2V
+	Peso
+	~30 g con caja engranajes
+	~150-300g
+	~200-400g
+	Costo
+	$3-5 USD
+	$15-25 USD
+	$20-35 USD
+	Compatibilidad PWM
+	Excelente
+	Requiere driver especial
+	Requiere señal específica
+	Precisión
+	Sin retroalimentación
+	Alta precisión
+	Alta precisión
+	
+
+Puente H TB6612FNG
+El módulo TB6612FNG permite el control bidireccional de los motores DC con velocidad variable mediante señales PWM, siendo responsable de la tracción del vehículo.
+Se eligió principalmente por su alta eficiencia energética (97%), baja caída de tensión (solo 0.5V @1A) y mínima disipación de calor, lo que evita el uso de disipadores grandes y mejora el aprovechamiento de la energía de la batería.
+Otra característica importante fue su compatibilidad con niveles lógicos de 3.3V y 5V, lo que permite conectarlo directamente a la EDU-CIAA sin necesidad de conversores de nivel. Además, su bajo consumo de corriente lógica (1.1 mA) contribuye a reducir la carga total del sistema.
+Frente al L298N, el TB6612FNG presenta mayor eficiencia y menor caída de tensión, mientras que el L298N disipa más calor y requiere mayor corriente de control, lo que lo hace menos adecuado para aplicaciones alimentadas por batería. En comparación con el DRV8833, el TB6612FNG ofrece un equilibrio mejor entre corriente máxima, disponibilidad y facilidad de implementación, manteniendo un tamaño compacto  y un costo razonable.
+Además, incorpora protección térmica, protección contra bajo voltaje y modo standby, aportando seguridad y estabilidad al sistema. Por estas razones, se consideró la opción más conveniente para el control de los motores DC del vehículo semiautónomo
+
+
+
+
+
+
+
+
+	TB6612FNG (Elegido)
+	L298N
+	DRV8833
+	Corriente máxima por canal
+	1.2A continua, 3.2A pico
+	2A continua, 3A pico
+	1.2A por canal
+	Tensión motores
+	2.5V - 13.5V (compatible 5V)
+	4.8V - 46 V
+	Hasta 10.8V
+	Tensión lógica
+	2.7V - 5.5V (compatible 5V/3.3V)
+	4.5V - 7V
+	2.7V - 5.25V
+	Eficiencia @ 5V
+	97% (RON 0.5Ω)
+	~85% (caída 1.4V)
+	97%
+	Caída tensión @ 1A
+	0.5V total (upper+lower)
+	3.2V @ 1A
+	<0.5V
+	Consumo lógica @ 5V
+	1.1mA típico
+	13-36mA
+	1.7mA típico
+	Disipación calor @ 5V
+	Muy baja (alta eficiencia)
+	Media-alta
+	Baja
+	Frecuencia PWM
+	Hasta 100kHz
+	Hasta 40kHz
+	Hasta 250kHz
+	Protección térmica
+	Sí (TSD 175°C)
+	Sí (integrada)
+	Sí
+	Protección bajo voltaje
+	Sí (UVLO ~1.9V)
+	No
+	No
+	Modo standby
+	Sí (reduce consumo)
+	No
+	No
+	Tiempo respuesta
+	tr: 24ns, tf: 41 ns
+	0.2-2μs
+	<0.5μs
+	Tamaño package
+	SSOP24 (compacto)
+	TO-220 (grande)
+	Compacto
+	Costo
+	$6-8 USD
+	$3-4 USD
+	$8-12 USD
+	Disponibilidad
+	Alta
+	Muy alta
+	Media
+	Servomotor S3003
+El servomotor S3003 se utiliza para el sistema de dirección del vehículo tipo karting, controlado mediante señales PWM que permiten realizar giros precisos y estables durante las maniobras de evasión.
+Se eligió principalmente por ofrecer un equilibrio adecuado entre torque, consumo y costo, características que lo hacen ideal para este proyecto.
+Su torque de 3.2 kg·cm es suficiente para mover el sistema de dirección con precisión sin sobrecargar la batería, mientras que el consumo máximo de 800 mA a 5V se mantiene dentro del presupuesto energético del sistema .
+En comparación, el MG996R ofrece mayor torque (8.5 kg·cm) pero duplica el consumo (2.2A pico) y su peso es mayor, lo cual no resulta conveniente para un vehículo pequeño alimentado por batería.
+Por otro lado, el SG90, aunque más liviano y económico, no entrega el torque necesario para mover el mecanismo de dirección con fluidez y podría presentar limitaciones bajo carga.
+El S3003 presenta además una precisión de ±1°, suficiente para el control de ángulo requerido, y es compatible con la señal PWM generada por la EDU-CIAA (50 Hz, 1–2 ms) sin necesidad de circuitos adicionales.
+
+
+
+
+	S3003 (Elegido)
+	MG996R
+	SG90
+	Torque @ 5V
+	3.2 kg·cm
+	8.5 kg·cm
+	1.6 kg·cm
+	Velocidad @ 5V
+	0.23 sec/60° (aceptable)
+	0.19 sec/60°
+	0.1 sec/60°
+	Consumo reposo @ 5V
+	6mA
+	180 mA típico
+	45 mA típico
+	Consumo máximo @5V
+	800mA (vs 1000mA @6V)
+	2.2A pico
+	550mA pico
+	Voltaje operación
+	4.8V - 6V (compatible 5V)
+	4.8V - 7.2V
+	4.8V - 6V
+	Ángulo rotación
+	180°
+	180°
+	180°
+	Precisión
+	±1° (típico servos estándar)
+	±1°
+	±3°
+	Peso
+	38g
+	55g
+	9g
+	Costo
+	$8-10 USD
+	$12-15 USD
+	$3-5 USD
+	Construcción
+	Engranajes plásticos
+	Engranajes metálicos
+	Engranajes plásticos
+	Control PWM
+	50Hz, pulso 1-2ms
+	50Hz, pulso 1-2ms
+	50Hz, pulso 1-2ms
+	Temperatura operación
+	-10°C a 50°C
+	-30°C a 60°C
+	0°C a 55°C
+	Sistema de Comunicación Inalámbrica: ESP32 + Joystick PlayStation DualSense
+Para el manejo manual del vehículo se implementó un sistema de control inalámbrico basado en un joystick de PlayStation DualSense conectado a un módulo ESP32 mediante Bluetooth Classic (BR/EDR).
+La elección del ESP32 se debió principalmente a que ya se disponía del hardware (placa ESP32 y joystick), además de su compatibilidad directa con el protocolo Bluetooth Classic, requerido por los mandos de PlayStation, algo que no es posible con un módulo RF 2.4 GHz convencional.
+El ESP32-WROOM-32 ofrece una solución integrada que simplifica la implementación, ya que cuenta con conectividad inalámbrica, capacidad de procesamiento, y compatibilidad total con la librería BluePad32, que gestiona automáticamente el emparejamiento, decodificación de datos de los joysticks, normalización de valores, reconexión y filtrado de señales.
+En comparación, el módulo RF 2.4 GHz, aunque ofrece mayor alcance, requiere un hardware receptor adicional, configuración más compleja y no permite aprovechar funciones avanzadas del joystick como giroscopio, vibración o indicadores luminosos.
+El ESP32 se comunica con la EDU-CIAA mediante UART a 115200 baudios (GPIO16 – RX2, GPIO17 – TX2), enviando los datos en formato de cadenas delimitadas o protocolo binario según las necesidades del sistema.
+
+
+
+
+	ESP32  (Elegido)
+	Módulo RF 2.4GHz
+	Protocolo comunicación
+	Bluetooth Classic (BR/EDR)
+	RF propietario
+	Alcance operación
+	10-30 m típico
+	50-100 m típico
+	Latencia
+	10-50 ms
+	5-15 ms
+	Disponibilidad
+	Joystick ya disponible
+	Requiere compra específica
+	Funciones extras
+	Giroscopio, vibrador, luces, bocinas
+	Solo joysticks básicos
+	Consumo ESP32 @ 3.3V
+	240mA (TX/RX activo), 80 mA (standby)
+	No aplica
+	Consumo receptor
+	No aplica
+	15-30 mA típico
+	Complejidad implementación
+	Media (librería BluePad 32)
+	Baja (UART directo)
+	Compatibilidad chips
+	Solo ESP32 origina (soporte BR/EDR)
+	ESP32, ESP32-S3,  ESP32-C3
+	Librerías disponibles
+	BluePad 32 (completa)
+	Propietarias limitadas
+	Costo adicional
+	$0 (ya disponible)
+	$15-25 USD
+	Robustez protocolo
+	Alta (stack Bluetooth estándar)
+	Variable según fabricante
+	Alimentación requerida
+	3.3V
+	3.3V - 5V
+	
+
+Kit Chasis Auto Robot Arduino Rover 4WD
+Se seleccionó para ser la estructura base del vehículo ya que ofrece el espacio suficiente para montar la EDU-CIAA, el ESP32, el driver TB6612FNG ,las baterías y el regulador de voltaje[d], permite fijar el servo y los sensores ultrasónicos en la parte frontal de manera firme, con un diseño modular que facilita el montaje y la organización del cableado.
+Indicadores LED 
+Se aprovechan los sistemas de control visual  en la placa EDU-CIAA y el Joystick de PlayStation para alertas al usuario, notificaciones, representaciones de estado de operación (modo automático, errores, standby, reversa, etc.), detección de obstáculos. 
+Interfaces Eléctricas y Conexiones
+El sistema integra la EDU-CIAA con los módulos de potencia, sensores ultrasónicos, servo y el ESP32 que funciona como joystick inalámbrico mediante comunicación UART.
+El diseño busca mantener una distribución ordenada de señales, separando las líneas de control lógico (3,3 V) de las de potencia (5 V) para evitar interferencias y caídas de tensión..
+
+
+Puente H TB6612FNG + Motores DC TT
+El puente H TB6612FNG se encarga del control de los dos motores DC del chasis. Cada canal (A y B) maneja un motor, permitiendo avanzar, retroceder o girar al vehículo.
+Las señales de control provienen directamente de la EDU-CIAA, usando salidas PWM por hardware para un control de velocidad estable.
+
+
+Señal
+	Pin EDU-CIAA
+	Tipo
+	Función
+	PWMA
+	TCOL0
+	PWM HW
+	Control de velocidad del Motor A
+	PWMB
+	TCOL1
+	PWM HW
+	Control de velocidad del Motor B
+	AIN1
+	GPIO6
+	Salida digital
+	Dirección Motor A
+	AIN2
+	GPIO8
+	Salida digital
+	Dirección Motor A
+	BIN1
+	GPIO2
+	Salida digital
+	Dirección Motor B
+	BIN2
+	GPIO0
+	Salida digital
+	Dirección Motor B
+	STBY
+	GPIO4
+	Salida digital
+	Habilita/Deshabilita el puente H
+	VM
+	+5 V (USB-C)
+	Alimentación
+	Potencia de los motores
+	VCC
+	3,3 V EDU-CIAA
+	Alimentación
+	Lógica del TB6612FNG
+	GND
+	—
+	—
+	
+
+	
+
+Las salidas hacia los motores (AO1/AO2 y BO1/BO2) están conectadas a los bornes de los motores DC TT.
+El pin STBY se utiliza como control general para activar o detener ambos canales del puente
+
+
+Sensores ultrasónicos HC-SR04 (3×)
+Los tres sensores HC-SR04 se encargan de la detección de obstáculos. Cada uno tiene un pin de disparo (TRIGGER) y un pin de eco (ECHO), conectados mediante divisores resistivos para adaptar la señal de 5V a 3.3 V.
+
+
+
+
+Señal
+	Pin EDU-CIAA
+	Tipo
+	Función
+	TRIG #1
+	GPIO1
+	Salida digital
+	Disparo del sensor 1
+	ECHO #1
+	TFIL0
+	Entrada Timer Capture
+	Medición del sensor 1
+	TRIG #2
+	GPIO3
+	Salida digital
+	Disparo del sensor 2
+	ECHO #2
+	TFIL3
+	Entrada Timer Capture
+	Medición del sensor 2
+	TRIG #3
+	GPIO5
+	Salida digital
+	Disparo del sensor 3
+	ECHO #3
+	TFIL2
+	Entrada Timer Capture
+	Medición del sensor 3
+	VCC
+	+5 V (USB-C)
+	Alimentación
+	Potencia de los sensores
+	GND
+	—
+	—
+	Masa común
+	
+
+Cada línea ECHO incluye divisor resistivo (10 kΩ/20 kΩ) para adaptar de 5V a 3.3V. Los sensores se disparan de forma secuencial con ≥60 ms de diferencia para evitar interferencias acústicas.
+
+
+Servo S3003
+El servo se usa para el movimiento del sensor central, controlando su orientación mediante una señal PWM estable a 50 Hz.
+Está alimentado desde la misma línea de 5 V que los sensores, con la posibilidad de agregar un capacitor de desacople si se detectan picos de corriente.
+
+
+Señal
+	Pin EDU-CIAA
+	Tipo
+	Función
+	PWM
+	TCOL2
+	PWM HW (50 Hz)
+	Control de ángulo (1–2 ms)
+	VCC
+	+5 V (USB-C)
+	Alimentación
+	Potencia del servo
+	GND
+	—
+	—
+	Masa com
+	
+
+ El pin TCOL2 fue seleccionado porque permite generar una señal PWM por hardware, lo que asegura que la señal enviada al servo sea estable y sin variaciones (bajo jitter). Otros pines como TFIL1 solo sirven para medir tiempos de entrada, pero no para generar PWM, por lo que no eran apropiados en este caso.
+
+
+El servo S3003 necesita una señal PWM confiable a 50 Hz, y TCOL2 cumple perfectamente con ese requisito. Además, este servo se alimenta en la misma línea que la lógica y los sensores, ya que su nivel de ruido eléctrico es mucho menor al de los motores DC.
+
+
+ESP32 (Joystick inalámbrico vía Bluetooth)
+Señal
+	Pin ESP32
+	Pin EDU-CIAA
+	Tipo
+	Función
+	TX2
+	GPIO17 (D7)
+	P1.23 (RX)
+	UART2
+	Envío de datos del joystick
+	RX2
+	GPIO16 (D6)
+	P1.25 (TX)
+	UART2
+	Recepción de datos desde EDU-CIAA
+	VCC
+	3V3 EDU-CIAA
+	—
+	Alimentación
+	Potencia lógica ESP32
+	GND
+	GND común
+	GND común
+	—
+	Referencia compartida
+	
+
+Para la comunicación con el ESP32 se decidió usar la UART2 en los pines GPIO16 y GPIO17 (marcados como D6/D7 en este módulo). La razón es que la UART0 está reservada para la programación y depuración mediante el puerto USB, por lo que si se usara también para el joystick podrían aparecer conflictos al momento de cargar el firmware o al iniciar la placa.
+
+
+Al dejar la UART0 libre y usar la UART2 exclusivamente para la comunicación con la EDU-CIAA, se garantiza que los datos del joystick viajen de forma independiente y sin interferir con otras funciones críticas del sistema. Esto asegura un enlace confiable y estable entre el control inalámbrico y la placa principal.
+
+
+Fuente de Alimentación y Cálculos de Consumo
+
+
+El sistema se alimenta mediante dos baterías de litio 18650 (3.7V cada una, capacidad típica 2500-3000mAh) conectadas en serie, entregando un voltaje total de 7.4V. Este voltaje se regula a 5V mediante un módulo step-down XL4016 de alta eficiencia.
+
+
+Justificación de la elección:
+
+
+El regulador XL4016 fue seleccionado por las siguientes características:
+1. Alta capacidad de corriente: Puede entregar hasta 8-9A máximo, suficiente para cubrir los picos de consumo del vehículo (motores + servo + sensores + lógica).
+2. Alta eficiencia: >90% de eficiencia de conversión, minimizando pérdidas energéticas y calentamiento.
+3. Protecciones integradas: Protección contra sobrecorriente, sobrecalentamiento y cortocircuitos, garantizando seguridad del sistema.
+4. Salida estable: Mantiene 5V regulados incluso ante variaciones de carga o descarga de las baterías (7.4V nominal hasta ~6V descargadas).
+5. Tamaño compacto: Módulo fácil de integrar en el chasis del vehículo.
+
+
+Ventajas del sistema de baterías 18650:
+* Alta capacidad de descarga: Las baterías 18650 pueden entregar entre 15-20A de corriente de descarga continua, soportando sin problemas los picos de arranque de los motores.
+* Densidad energética: Mayor capacidad en menor volumen comparado con otras tecnologías de baterías recargables.
+* Bajo costo y disponibilidad: Baterías ampliamente disponibles y económicas.
+* Recargables: Pueden recargarse cientos de veces, reduciendo el costo operativo del vehículo.
+
+
+Distribución de alimentación:
+
+
+El regulador XL4016 entrega 5V a todos los componentes del sistema mediante pistas de 1mm en el PCB, garantizando caídas de tensión mínimas (<0.05V):
+* EDU-CIAA: Alimentada a 5V (regula internamente a 3.3V para lógica)
+* ESP32: Alimentado a 3.3V desde regulador de la EDU-CIAA
+* Sensores HC-SR04 (×3): Alimentados a 5V directamente
+* Servo S3003: Alimentado a 5V directamente
+* Puente H TB6612FNG: VM a 5V para potencia de motores, VCC a 3.3V para lógica[e]
+
+
+Consumo estimado del sistema:
+
+
+
+
+
+
+	Consumo típico
+	Consumo máximo
+	Potencia @ 5V
+	EDU-CIAA
+	150 mA
+	150 mA
+	0.75 W
+	ESP32
+	240 mA
+	240 mA
+	1.20 W
+	Sensores HC-SR04(3×)
+	45 mA
+	45 mA
+	0.23 W
+	Servo S3003
+	200–300 mA
+	800 mA
+	4.0 W (pico)
+	Motores DC TT (2×)
+	400 mA
+	1.2 A (pico)
+	6.0 W (pico)
+	TB6612FNG (lógica)
+	1 mA
+	1 mA
+	0.005 W
+	Total aprox.
+	1.0–1.2 A
+	2.6–2.7 A
+	≈ 4.7–5 W típ. / 7.5–8 W pico
+	
+
+Circuito Esquemático
+Para visualizar el diagrama único del diseño esquemático haga click aki. La lista de materiales detallada se adjunta en el Anexo al final de este documento.
+
+
+Diseño del PCB
+En esta etapa se realizó el diseño completo del PCB en KiCAD, aplicando los conocimientos adquiridos en clase sobre reglas de diseño y adaptándolos a las posibilidades reales de fabricación disponibles en el laboratorio de la facultad.
+Características Generales del PCB
+El PCB diseñado tiene las siguientes especificaciones:
+* Dimensiones: 95 mm × 135 mm 
+* Capas: 2 capas (TOP y BOTTOM)
+* Material: FR4 estándar de 1.6 mm de espesor
+* Acabado: Máscara antisoldante azul y serigrafía blanca para identificar componentes
+* Montaje: 4 orificios de 3.2 mm en las esquinas para fijación con tornillos M3
+
+
+A continuación se presentan algunos de los criterios para el diseño de la PCB:
+
+
+1. Centralización del sistema en una sola placa
+
+
+En lugar de usar protoboards y cables sueltos, se integra todo en un único PCB. Esto tiene varias ventajas importantes para un vehículo en movimiento: evita que se desconecten cables por vibración, reduce el espacio ocupado en el chasis, disminuye las interferencias electromagnéticas al acortar las conexiones, y facilita enormemente el armado y las pruebas.
+
+
+2. Separación inteligente de potencia y control
+
+
+Una de las decisiones más críticas fue dividir físicamente el PCB en dos zonas:
+* Zona de potencia (lado derecho): Agrupa las borneras de los motores y todas las pistas que manejan corrientes altas (hasta 2.5A).
+* Zona de control (lado izquierdo y centro): Contiene los conectores de la EDU-CIAA, el ESP32 y los sensores.
+
+
+Esta separación es fundamental porque los motores DC generan mucho ruido eléctrico al arrancar y frenar. Si las pistas de potencia estuvieran mezcladas con las de control, ese ruido podría causar lecturas falsas en los sensores o incluso reiniciar el microcontrolador.
+
+
+3. Decisión de ancho uniforme de pistas: 1 mm
+
+
+Después de evaluar diferentes opciones, se decidió estandarizar todas las pistas del   PCB a 1 mm de ancho. Esta decisión se tomó por las siguientes razones:
+* Simplificación del diseño: al usar un ancho único, el proceso de diseño y verificación se vuelve más simple y menos propenso a errores, ya que no hay que estar cambiando constantemente el ancho de pista durante el ruteo.
+* Capacidad de corriente sobrada: según el estándar IPC-2221, una pista de 1 mm en PCB de 1 oz de cobre puede manejar cómodamente hasta 2.5A con un incremento de temperatura menor a 10°C. Esto cubre perfectamente tanto las señales de control (que requieren  menor a  100 mA) como las líneas de alimentación de motores (hasta 2.5A).
+* Margen de seguridad para todas las señales: aunque las señales de control solo necesitarían pistas de 0.5-0.7 mm, usar 1 mm da un margen de seguridad adicional y reduce la resistencia de las pistas, lo que mejora la calidad de las señales PWM de alta frecuencia (20 kHz).
+* Facilidad de fabricación: pistas más anchas son más fáciles de fabricar y tienen menor probabilidad de defectos durante el proceso de revelado químico. Además, son más resistentes mecánicamente.
+* Mejor disipación térmica: pistas más anchas distribuyen mejor el calor generado por las corrientes, especialmente importante en la zona de los motores.
+* Reducción de caídas de tensión: con 1 mm de ancho, las caídas de tensión en las pistas son mínimas incluso con las corrientes máximas, garantizando que todos los módulos reciban exactamente los 5V necesarios.
+
+
+La única excepción a esta regla son las conexiones muy cortas entre pads muy cercanos, donde ocasionalmente se usa 0.5 mm por restricciones de espacio, pero estos casos son mínimos y no afectan el desempeño del sistema.
+
+
+4. Plano de tierra en la capa inferior
+
+
+En la capa BOTTOM se implementa un plano de tierra que cubre la mayor parte del PCB. Esto funciona como un "blindaje" eléctrico que reduce el ruido, mejora el retorno de las corrientes y facilita el diseño de la capa superior al tener una referencia común de GND para todos los componentes.
+
+
+5. Cuidado especial en señales críticas
+
+
+Se presta especial atención al ruteo de:
+* Señales PWM: Se mantienen lo más cortas posible y sin curvas bruscas para evitar reflexiones que degraden la señal. El ancho de 1 mm ayuda a mantener una impedancia baja y estable.
+* Señales ECHO de los sensores: Uso de divisores resistivos muy cerca de cada conector para proteger las entradas de la EDU-CIAA, y usamos vías para conectar rápidamente con el plano de tierra.
+* Líneas UART (TX/RX): aunque a 115200 baudios no es crítico, se mantienen paralelas y de longitud similar como buena práctica de diseño. El ancho de 1 mm garantiza baja impedancia y buena integridad de señal.
+
+
+6. Sistema de alimentación robusto
+Para garantizar una alimentación estable:
+* Todas las pistas de +5V y GND usan el ancho estándar de 1 mm, lo que proporciona capacidad de corriente más que suficiente para todo el sistema
+* Uso de capacitores de 100nF cerca de cada módulo para filtrar ruido de alta frecuencia
+* Uso de capacitores de 10µF junto a las borneras de motores para absorber los picos de corriente cuando arrancan o frenan
+
+
+La ventaja de tener todas las pistas de alimentación a 1 mm es que permite manejar picos de corriente inesperados sin riesgo de sobrecalentamiento, y las caídas de tensión son prácticamente despreciables en toda la placa.
+
+
+
+
+7. Facilidad de montaje
+Usamos solo conectores tipo pin header estándar de 2.54 mm, que son universales, baratos y permiten conectar/desconectar módulos rápidamente durante las pruebas sin necesidad de desoldar nada.
+
+
+Reglas de Diseño Aplicadas
+Configuración KiCAD con estos parámetros basados en las capacidades del proceso de fabricación:
+Pads (islas):
+* Taladro: 0.7 mm
+* Diámetro total: 2.0-2.5 mm según el componente
+* Esto garantiza un anillo de cobre de mínimo 0.65 mm, suficiente para soldadura confiable
+
+
+Pistas:
+* Ancho estándar para todas las pistas: 1.0 mm
+   * Capacidad de corriente: hasta 2.5A con ΔT < 10°C (según IPC-2221)
+   * Resistencia típica: ~0.5 Ω/metro (despreciable para las longitudes del PCB)
+   * Suficiente para señales de control y alimentación de potencia
+* Ancho mínimo permitido: 0.5 mm (solo en conexiones críticas entre pads muy cercanos, casos excepcionales)
+
+
+Separaciones:
+* Entre pads: 0.7 mm (0.5 mm mínimo en conectores densos)
+* Entre pistas: 0.7 mm (margen de seguridad amplio dado el ancho uniforme de 1 mm)
+* Entre pista y pad: 0.1 mm
+* Entre zonas de potencia y control: 3 mm (separación física adicional)
+
+
+Vías:
+* Taladro: 0.6 mm
+* Pad: 1.2 mm
+* Cantidad: ~45 vías distribuidas estratégicamente
+
+
+Estas reglas aseguran que el PCB sea fabricable con el equipamiento disponible y tenga márgenes de seguridad amplios para evitar cortocircuitos. El uso de pistas de 1 mm uniformes simplifica enormemente la verificación de reglas de diseño.
+
+
+
+
+
+
+
+
+
+
+Descripción de las Capas
+
+
+Capa TOP (Superior):
+Contiene la mayoría de las conexiones:
+* Conectores para EDU-CIAA (2×15 pines), ESP32, sensores y servo
+* Divisores resistivos (10kΩ/20kΩ) junto a cada sensor
+* Capacitores de desacople (100nF) cerca de cada alimentación
+* Todas las pistas trazadas con ancho de 1 mm, en líneas rectas o ángulos de 45° para mantener buena integridad de señal
+
+
+Capa BOTTOM (Inferior):
+   
+Esta capa es la "columna vertebral" eléctrica del sistema:
+* Plano de tierra (70% del área): zona azul oscuro que sirve de referencia común para todo el circuito, reduce ruido y mejora la disipación de calor. El uso de pistas anchas de 1 mm en la capa superior permite un mejor acoplamiento con este plano de tierra.
+* Pistas de +5V: trazadas con el ancho estándar de 1 mm, se ramifican desde la entrada de alimentación hacia todos los módulos (EDU-CIAA, ESP32, sensores, servo, motores). Este ancho garantiza:
+   * Caída de tensión mínima: <0.05V incluso con 2.5A a lo largo de toda la placa
+   * Sin puntos calientes ni sobrecalentamiento
+   * Distribución uniforme de corriente a todos los módulos
+* Zona de motores: las pistas de alimentación mantienen el ancho de 1 mm hasta las borneras, con capacitores de 10µF para filtrar picos de corriente. Aunque tradicionalmente se usarían pistas más anchas aquí, 1 mm es más que suficiente para los 2.5A máximos que consumirán los motores.
+* Vías estratégicos: conectan los capacitores y divisores resistivos de la capa TOP con el plano de GND en la BOTTOM, y permiten el paso de señales que no podían rutearse completamente en una sola capa. El ancho uniforme de 1 mm facilita la conexión con estos vías sin cuellos de botella.
+Vista 3D del PCB
+En el Anexo 9.2 se incluye la vista 3D generada por KiCAD que muestra la disposición final de todos los componentes, la orientación de los conectores para facilitar el cableado, y la ubicación de los orificios de montaje. Esta visualización nos permitió detectar y corregir posibles problemas antes de fabricar.
+El diseño con pistas uniformes de 1 mm resulta visualmente más limpio y ordenado, facilitando también la inspección visual durante el ensamblaje.
+
+
+ Implementación Final: PCB Fabricado y Sistema de Alimentación[f]
+
+
+El PCB fue fabricado exitosamente en el laboratorio de la Facultad siguiendo el diseño esquemático presentado. El diseño original contemplaba alimentación mediante conector USB-C integrado en la placa, lo cual es adecuado para pruebas de laboratorio pero presenta limitaciones para un vehículo autónomo que requiere movilidad sin cables.
+
+
+Adaptación del Sistema de Alimentación
+[g]
+
+
+Durante la etapa de implementación, se tomó la decisión de adaptar externamente el sistema de alimentación para mejorar la autonomía y portabilidad del vehículo:
+
+
+Sistema implementado:
+* Fuente de energía: Dos baterías de litio 18650 (3.7V, 2500-3000mAh cada una) conectadas en serie
+* Voltaje nominal: 7.4V (baterías en serie)
+* Regulación: Módulo step-down XL4016 que convierte 7.4V a 5V regulados
+* Capacidad: El XL4016 puede entregar hasta 8-9A, suficiente para todos los picos de consumo
+* Conexión: El módulo regulador se conecta directamente al conector de alimentación existente en el PCB (originalmente diseñado para USB-C)
+
+
+Justificación técnica de la adaptación:
+El cambio a baterías 18650 con regulador externo ofrece varias ventajas sobre la alimentación USB:
+1. Autonomía real: Capacidad de más de 1 hora de funcionamiento continuo sin cables
+2. Movilidad completa: Eliminación de la dependencia de cables de alimentación
+3. Mayor capacidad de corriente: Las baterías 18650 pueden entregar 15-20A de descarga continua, muy superior a los 3A típicos de USB-C
+4. Flexibilidad: El PCB mantiene su funcionalidad original y puede alimentarse por USB-C para pruebas de laboratorio
+5. Costo-efectividad: Baterías recargables ampliamente disponibles y económicas
+
+
+Características del regulador XL4016:
+* Alta eficiencia (>90%)
+* Protecciones integradas (sobrecorriente, sobrecalentamiento, cortocircuito)
+* Salida estable de 5V incluso con variaciones de carga
+* Tamaño compacto para integración en el chasis
+
+
+PCB Fabricado - Resultado Final
+El PCB fabricado muestra la calidad de manufactura lograda en el laboratorio de la Facultad. En la imagen se pueden observar:
+* Pistas claramente definidas: El ancho uniforme de 1mm facilitó el proceso de fabricación y resultó en pistas limpias sin cortocircuitos
+* Separación entre zonas: La división entre zona de potencia y control es visible físicamente
+* Plano de tierra: La capa inferior muestra el extenso plano de GND que cubre la mayor parte del PCB
+* Conectores bien distribuidos: Los pin headers están correctamente espaciados y alineados
+* Orificios de montaje: Los 4 agujeros de fijación permiten un montaje seguro en el chasis
+  
+
+
+
+
+
+Observaciones sobre la fabricación:
+El proceso de fabricación en el laboratorio de la Facultad fue exitoso, logrando:
+* Transferencia limpia del diseño mediante método de planchado/fotograbado
+* Atacado químico uniforme sin sobre-grabado ni sub-grabado
+* Perforaciones precisas de 0.7mm para los pads
+* Soldabilidad adecuada de las pistas de cobre
+
+
+Conexión del sistema de alimentación al PCB fabricado:[h]
+El módulo regulador XL4016 con las baterías 18650 se conecta a los pads de alimentación del PCB (pads del conector USB-C: VCC y GND), proporcionando los 5V regulados necesarios para todo el sistema. Esta solución mantiene la compatibilidad con el diseño original mientras ofrece las ventajas de un sistema de baterías portátil.
+La implementación final demuestra la flexibilidad del diseño, permitiendo adaptaciones externas sin necesidad de modificar el PCB fabricado.
+
+
+
+
+5. Diseño del Firmware, Simulación y Depuración
+5.1 Arquitectura del Firmware
+El firmware se desarrollará en lenguaje C sobre la plataforma EDU-CIAA-NXP, utilizando una arquitectura basada en FreeRTOS (Real-Time Operating System). Esta decisión se fundamenta en la necesidad de gestionar múltiples tareas concurrentes con diferentes prioridades y requisitos de temporización.
+La organización del sistema se basa en la creación de cinco tareas principales, cada una con responsabilidades bien definidas y comunicándose entre sí mediante colas y semáforos:
+* Tarea_Sensores (alta prioridad): adquisición periódica de las distancias medidas por los sensores ultrasónicos.
+
+* Tarea_Control_Movimiento (alta prioridad): ejecución de la máquina de estados para la navegación autónoma o el control manual según el modo seleccionado.
+
+* Tarea_Comunicación_Joystick (prioridad media): recepción de comandos desde el 
+ESP32 y validación de datos.
+
+
+Tarea_Control_Errores (prioridad media-alta): supervisión del correcto funcionamiento del sistema y detección de fallas críticas.
+
+
+   * Tarea_Indicadores (prioridad baja): gestión del feedback visual y sonoro hacia el usuario.
+
+
+
+Pseudocódigo de la arquitectura general:
+
+
+INICIALIZACIÓN:
+  - Configurar periféricos (GPIO, PWM, UART, Timers)
+  - Inicializar FreeRTOS
+  - Crear tareas (Sensores, Control, Comunicación,Control_Errores,
+                  Indicadores)    
+  - Crear colas y semáforos de sincronización
+  - Iniciar scheduler
+
+
+TAREA_SENSORES (cada 100 ms):
+  Para cada sensor (1,2,3):
+    - Disparar pulso TRIG
+    - Capturar tiempo ECHO con Timer Capture
+    - Calcular distancia = (tiempo_echo * velocidad_sonido) / 2
+    - Filtrar lecturas con promedio móvil (3 muestras)
+  Enviar datos a cola de distancias
+  Actualizar timestamp de última lectura exitosa
+  Respetar 60 ms entre mediciones (evitar interferencias)
+
+
+TAREA_CONTROL_MOVIMIENTO (cada 50 ms):
+  Leer modo actual (manual / automático)
+  SI modo automático:
+    - Procesar datos de sensores desde cola
+    - Ejecutar máquina de estados (avance, precaución, frenado, evasión)
+  SINO (modo manual):
+    - Procesar comandos desde joystick
+    - Controlar motores y servo directamente
+  Actualizar salidas PWM de motores y servo
+  Actualizar timestamp de última ejecución
+
+
+
+
+TAREA_COMUNICACION_JOYSTICK (cada 20 ms):
+  - Leer datos por UART2
+  - Parsear comandos de joystick (ejes y botones)
+  - Validar datos recibidos
+  - Enviar comandos a cola de control
+  - Actualizar timestamp de última comunicación válida
+  - SI timeout > 500 ms → marcar bandera UART_OK = 0
+
+
+TAREA_CONTROL_ERRORES (cada 100 ms):
+  - Verificar timestamp comunicación UART (timeout 500 ms)
+  - Verificar estado BT_LINK del ESP32
+  - Leer estado del botón de emergencia (BTN_O)
+  - Verificar heartbeat de tareas críticas mediante timestamps
+  
+  SI detecta error crítico (UART_OK=0 O BT_LINK=0 O BTN_O=1):
+    - Forzar variable global estado_sistema = EMERGENCIA
+    - Notificar a Tarea_Control_Movimiento mediante semáforo
+    - Enviar bandera de error a cola de indicadores
+    - Registrar tipo de error detectado
+  
+  SI error se resolvió (BT_LINK=1 Y UART_OK=1 Y BTN_O=0):
+    - Permitir transición desde EMERGENCIA → MODO_MANUAL
+    - Limpiar banderas de error
+    - Notificar recuperación al sistema
+
+
+TAREA_INDICADORES (cada 200 ms):
+  - Leer estado del sistema desde cola
+  - Actualizar LEDs (verde, amarillo, rojo, azul)
+  - Gestionar parpadeos y secuencias de alerta
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+FreeRTOS gestiona el scheduling de tareas en base a prioridades, garantizando que las funciones críticas (sensores y control) tengan respuesta inmediata, mientras que las tareas de indicadores se ejecutan en segundo plano sin comprometer el rendimiento.
+La Tarea_Control_Errores actúa como supervisor del sistema, evaluando periódicamente los indicadores de estado (UART_OK, BT_LINK, BTN_O, timestamps de tareas críticas) y detectando cualquier anomalía que pueda comprometer la seguridad del vehículo. En caso de detectar una falla crítica, esta tarea es la responsable de activar la transición al estado EMERGENCIA definido en la máquina de estados, deteniendo los motores y notificando al usuario mediante los indicadores LED.
+De esta forma, FreeRTOS no solo gestiona la ejecución concurrente de las tareas operativas, sino también la detección temprana de errores y la recuperación segura del sistema, cumpliendo con los requisitos de confiabilidad y seguridad establecidos en el proyecto
+5.2 Módulos del Firmware
+El firmware se estructura en tres capas bien definidas:
+
+
+Capa de Drivers (HAL - Hardware Abstraction Layer)
+      1. driver_gpio.c/.h: Configuración y control de pines digitales (direcciones de motores, triggers de sensores, LEDs)
+      2. driver_pwm.c/.h: Generación de señales PWM por hardware para motores y servo (usando periféricos SCT)
+      3. driver_uart.c/.h: Comunicación serie con ESP32 (UART2 a 115200 baudios)
+      4. driver_timer_capture.c/.h: Medición precisa de pulsos ECHO de sensores ultrasónicos
+
+
+Capa de RTOS
+1.FreeRTOS: Sistema operativo de tiempo real (versión incluida en firmware_v3 del proyecto CIAA)
+2.Bibliotecas utilizadas: FreeRTOS.h, task.h, queue.h, semphr.h
+Capa de Aplicación
+1.app_sensores.c/.h: Gestión de lectura y filtrado de sensores ultrasónicos
+2.app_control_movimiento.c/.h: Máquina de estados para navegación autónoma y control manual
+3.app_evasion.c/.h: Algoritmos de toma de decisiones para evasión de obstáculos
+4.app_comunicacion.c/.h: Protocolo de comunicación con ESP32 y parsing de comandos del joystick
+5.app_control_errores.c/.h: Supervisión del sistema y detección de fallas críticas
+5.app_indicadores.c/.h: Control de feedback visual al usuario
+6.main.c: Inicialización del sistema y creación de tareas
+Bibliotecas externas a utilizar:
+1.sAPI (Simple API): Biblioteca del proyecto CIAA para abstracción de hardware
+2.firmware_v3: Framework del proyecto CIAA que incluye FreeRTOS y drivers base
+3.No se utilizarán librerías del fabricante NXP directamente, sino a través de la capa sAPI
+5.3 Software Adicional: Firmware ESP32
+El ESP32 ejecuta un firmware independiente desarrollado en C++ usando el framework Arduino-ESP32:
+Pseudocódigo ESP32:
+
+
+INICIALIZACIÓN:
+ - Inicializar Bluetooth Classic
+ - Cargar librería BluePad32
+ - Configurar callback para eventos del joystick
+ - Inicializar UART2 (GPIO16/17) a 115200 baudios
+ - Esperar conexión del control PS3/PS4
+
+LOOP PRINCIPAL:
+ - Actualizar BluePad32 (procesar eventos Bluetooth)
+ - SI control conectado:
+   - Leer estado de joysticks (LX, LY, RX, RY)
+   - Leer estado de botones
+   - Normalizar valores (-127 a +127)
+   - Construir trama de datos:
+     Formato: "#LX:valor,LY:valor,RX:valor,BTN:mask\n"
+   - Enviar por UART2 a EDU-CIAA
+    - Actualizar variable BT_LINK = 1
+ - SI control desconectado:
+   - Enviar comando de emergencia: "#STOP\n"
+    - Marcar BT_LINK = 0
+   - Intentar reconexión automática
+ FIN SI
+ - Esperar 20 ms (frecuencia 50Hz)
+FIN LOOP
+	
+
+Librerías utilizadas:
+1.BluePad 32: Gestión completa de conexión con mandos PlayStation
+2.Arduino-ESP32: Framework base para desarrollo en ESP32
+5.4 Interfaz de Usuario 
+La interfaz de usuario se implementa mediante el control PS3/PS4 y el sistema de indicadores LED del vehículo, permitiendo una interacción intuitiva entre el usuario y el sistema.
+5.4.1 Control mediante Joystick PS3/PS4
+El control inalámbrico PS3/PS4, conectado al sistema mediante el módulo ESP32 con protocolo Bluetooth Classic, permite al usuario controlar el vehículo de forma remota. El mapeo de controles fue diseñado para proporcionar una experiencia de manejo natural y responsiva.
+
+
+Mapeo de controles:
+1.Joysticks analógicos:
+a)Joystick Izquierdo (Eje Y - LY): Control de velocidad de avance/retroceso
+      * Arriba (LY > +20): Avanzar con velocidad proporcional (PWM 35-100%)
+      * Centro (−20 ≤ LY ≤ +20): Punto muerto, vehículo detenido
+      * Abajo (LY < −20): Retroceder con velocidad proporcional (PWM 35-100%)
+b)Joystick Derecho (Eje X - RX): Control de dirección
+      * Izquierda (RX < −20): Girar ruedas hacia la izquierda (servo 45-90°)
+      * Centro (−20 ≤ RX ≤ +20): Ruedas al frente (servo 90°)
+      * Derecha (RX > +20): Girar ruedas hacia la derecha (servo 90-135°)
+
+
+2.Botones de modo:
+1.Botón Triángulo (△): Activar modo automático (sistema de detección y evasión de obstáculos)
+2.Botón Cruz (×): Activar modo manual (control completo por joystick)
+3.Botón Círculo (○): Detención de emergencia (stop inmediato, retorno a modo manual)
+
+
+Cabe aclarar que los valores normalizados del joystick van de −127 a +127. Se estableció una zona muerta (dead zone) de ±20 para evitar movimientos no deseados por pequeñas desviaciones del joystick en posición de reposo.
+5.4.2 Feedback Visual 
+El sistema proporciona retroalimentación continua al usuario mediante indicadores LED, permitiendo conocer el estado del vehículo sin necesidad de observarlo directamente.
+Indicadores implementados:
+Estado del Sistema
+	LED RGB(EDU-CIAA)
+	Descripción
+	Inicialización
+	LED parpadeo blanco (1Hz)
+	Sistema arrancando, cargando configuración
+	Modo Manual
+	LED azul continuo
+	Usuario tiene control completo del vehículo
+	Modo Automático - Avance Normal
+	LED verde continuo
+	Navegación autónoma sin obstáculos detectados
+	Precaución
+	LED amarillo continuo
+	Obstáculo detectado entre 30-60 cm, reduciendo velocidad
+	Frenado + Análisis
+	LED rojo continuo
+	Obstáculo <30cm, vehículo detenido, analizando sensores
+	Ejecutando Evasión
+	LED rojo parpadeante (2Hz)
+	Maniobra de esquive en curso
+	Error/Desconexión BT
+	LED rojo parpadeante rápido (5Hz)
+	Pérdida de comunicación con joystick
+	Batería baja
+	LED naranja parpadeante lento (0.5Hz)
+	Power bank por debajo del 20%
+	
+
+Cabe aclarar que  los LEDs integrados en la EDU-CIAA (LED0_R, LED0_G, LED0_B que conforman el LED RGB, y LED1, LED2, LED3) son controlados mediante GPIO desde  la Tarea_Indicadores.. 
+    5.5 Máquina de Estados
+Para coordinar las acciones del sistema de forma ordenada y predecible, se implementa una máquina de estados finitos de tipo Moore que gestiona el comportamiento del vehículo semiautónomo.
+La máquina de estados se ejecuta dentro de la Tarea_Control_Movimiento, que tiene alta prioridad en el scheduler de FreeRTOS. Esta tarea lee periódicamente (cada 50 ms) las entradas del sistema provenientes de las colas de comunicación (datos de sensores, comandos del joystick, banderas de error) y, en función del estado actual, decide las acciones a ejecutar sobre los actuadores (motores y servo) y evalúa las condiciones para transitar a otros estados.
+De esta manera, la máquina de estados no es una tarea independiente, sino que forma parte de la lógica de control principal del vehículo. Esto garantiza que las decisiones de navegación y las respuestas ante obstáculos se procesen con alta prioridad, asegurando tiempos de reacción rápidos y predecibles.
+La variable estado actual es de tipo enumerado y se mantiene como una variable global protegida, accesible por la Tarea_Control_Movimiento (que la modifica según las transiciones), la Tarea_Control_Errores (que puede forzar la transición a EMERGENCIA) y la Tarea_Indicadores (que la lee para actualizar los LEDs sin modificarla). El acceso concurrente se gestiona mediante semáforos para evitar condiciones de carrera.
+5.5.1 Estados del Sistema
+El sistema se organiza a través de una máquina de estados de tipo Moore, ya que:
+      * Cada estado tiene asociadas acciones fijas sobre actuadores y salidas (LEDs, motores, servo).
+      * Las transiciones dependen de entradas externas: distancias medidas por los sensores ultrasónicos, botones del joystick, o estado de la comunicación UART/Bluetooth.
+
+      * Las salidas dependen únicamente del estado actual y no directamente de las entradas (característica de una Moore).
+
+Este enfoque resulta ventajoso para el proyecto porque:
+         1. Facilita la implementación en FreeRTOS:la Tarea_Control_Movimiento solo consulta el estado actual y aplica las salidas correspondientes, mientras que otras tareas (como Tarea_Sensores o Tarea_Comunicación_Joystick) solo envían datos mediante colas sin preocuparse por la lógica de decisión..
+
+         2. Aumenta la robustez del sistema evitando glitches o transiciones erráticas.
+
+         3. Mantiene una organización clara:
+
+            * Acciones → asociadas a cada estado y ejecutadas por Tarea_Control_Movimiento.
+
+            * Condiciones de salida → evaluadas por Tarea_Control_Movimiento en base a las entradas recibidas desde las colas
+
+
+          Reglas globales de prioridad (heredadas en todos los estados operativos)
+
+
+               * Emergencia:si se presiona BTN_O o se pierde comunicación (UART_OK=0 detectado por Tarea_Control_Errores) → ir a EMERGENCIA.
+               * Cambio manual: si se presiona BTN_X → ir a MODO_MANUAL.
+               * Cambio automático: si se presiona BTN_TRI → ir a MODO_AUTOMÁTICO.
+
+
+
+
+Estados definidos en la máquina de Moore:
+Estado: INICIALIZACIÓN
+               * Acciones: configurar periféricos (GPIO, PWM, UART, Timers); inicializar FreeRTOS y tareas; calibrar sensores ultrasónicos; esperar conexión BT.
+               * Indicador: LED blanco parpadeante 1 Hz; motores PWM=0; servo centrado;.
+               * Transiciones:
+               * RESET → entra a este estado.
+               * BT_LINK=1 && BTN_X=1 → MODO_MANUAL.
+               * BT_LINK=1 && BTN_TRI=1 → MODO_AUTOMÁTICO.
+               Estado: MODO_MANUAL
+               * Acciones: leer comandos por UART; controlar velocidad (joystick izq. Y); controlar dirección (joystick der. X). Sensores activos pero sin gobernar FSM.
+               * Indicador: LED azul continuo.
+               * Transiciones:
+               * BTN_TRI=1 → MODO_AUTOMÁTICO.
+               * (Más las reglas globales).
+
+
+Estado: MODO_AUTOMÁTICO
+               * Acciones: leer sensores cada 100 ms; avanzar recto a PWM≈70 %; servo centrado.
+               * Indicador: LED verde continuo.
+               * Transiciones:
+               * 30 ≤ D_FRONT ≤ 60 → PRECAUCIÓN.
+               * D_FRONT < 30 → FRENADO.
+               * (Más las reglas globales).
+
+Estado: PRECAUCIÓN
+                  * Acciones: reducir velocidad según fórmula PWM = 35 + (D_FRONT−30) * (35/30) (clamp 35–70); mantener dirección; aumentar frecuencia de sensado (50 ms).
+                  * Indicador: LED amarillo continuo.
+                  * Transiciones:
+                  * D_FRONT > 60 → MODO_AUTOMÁTICO.
+                  * D_FRONT < 30 → FRENADO.
+                  * (Más las reglas globales).
+
+
+Estado: FRENADO
+                  * Acciones: detener motores (PWM=0 inmediato); servo centrado mientras analiza; LED rojo continuo. Leer sensores laterales para evasión.
+                  * Transiciones:
+                  * max(D_LEFT,D_RIGHT) ≥ 40 cm → ESQUIVANDO.
+                  * Si ningún lado ≥ 40 cm → permanecer en FRENADO.
+                  * (Más las reglas globales).
+
+
+Estado: ESQUIVANDO
+                  * Acciones: girar servo hacia lado elegido; avanzar PWM≈40 % por 2 s; volver servo al centro y avanzar recto 1 s extra.
+                  * Indicador: LED rojo parpadeo 2 Hz e.
+                  * Transiciones:
+                  * Tras completar la maniobra (~3 s) → REANUDANDO.
+                  * Si durante la maniobra D_FRONT < 20 cm → FRENADO.
+
+
+Estado: REANUDANDO
+                  * Acciones: motores PWM=0 durante 0,5 s; apagar LEDs de alerta; re-verificar frontal.
+                  * Indicador: LED verde parpadeo 1 Hz.
+                  * Transiciones:
+                  * D_FRONT > 60 → MODO_AUTOMÁTICO.
+                  * 30 ≤ D_FRONT ≤ 60 → PRECAUCIÓN.
+                  * D_FRONT < 30 → FRENADO.
+                  * (Más las reglas globales).
+
+
+Estado: EMERGENCIA
+                  * Acciones:detener motores (PWM=0); servo centrado; LED rojo parpadeo rápido (5 Hz); intentar reconexión BT/UART. Este estado es activado por la Tarea_Control_Errores al detectar condiciones críticas..
+                  * Transiciones:
+                  * Entrada: BTN_O=1 o UART_OK=0(detectado por Tarea_Control_Errores).
+                  * Salida: reconexión exitosa (BT_LINK=1 && UART_OK=1) → MODO_MANUAL.
+
+5.5.2 Diagrama de Estados
+  
+
+5.5.3 Tabla de Transiciones de Estados
+
+
+La siguiente tabla resume las condiciones de entrada y las transiciones de la máquina de estados del sistema. Se muestran el estado actual, la condición de transición, el estado siguiente y las acciones asociadas (indicadores LED y control de actuadores).
+
+
+Estado actual
+	Condición
+	Estado siguiente
+	INICIALIZACIÓN
+	BT_LINK=1 && BTN_X=1
+	MODO_MANUAL
+	INICIALIZACIÓN
+	BT_LINK=1 && BTN_TRI=1
+	MODO_AUTOMÁTICO
+	MODO_MANUAL
+	BTN_TRI=1
+	MODO_AUTOMÁTICO
+	MODO_AUTOMÁTICO
+	30 ≤ D_FRONT ≤ 60
+	PRECAUCIÓN
+	MODO_AUTOMÁTICO
+	D_FRONT < 30  
+	FRENADO
+	PRECAUCIÓN
+	D_FRONT > 60
+	MODO_AUTOMÁTICO
+	PRECAUCIÓN
+	D_FRONT < 30
+	FRENADO
+	FRENADO
+	max(D_LEFT,D_RIGHT) ≥ 40 cm
+	ESQUIVANDO
+	FRENADO
+	max(D_LEFT,D_RIGHT) < 40 cm
+	FRENADO (se mantiene)
+	ESQUIVANDO
+	Tras completar maniobra (~3 s)
+	REANUDANDO
+	ESQUIVANDO
+	D_FRONT < 20 cm durante maniobra
+	FRENADO
+	REANUDANDO
+	D_FRONT > 60
+	MODO_AUTOMÁTICO
+	REANUDANDO
+	30 ≤ D_FRONT ≤ 60
+	PRECAUCIÓN
+	REANUDANDO
+	D_FRONT < 30
+	FRENADO
+	EMERGENCIA
+	BT_LINK=1 && UART_OK=1
+	MODO_MANUAL
+	
+
+5.5.4 Gestión de Eventos
+Los eventos que provocan transiciones entre estados provienen de tres fuentes principales:
+                     1. Comandos del joystick (vía UART desde ESP32)
+                     * BTN_TRI (△): BTN_TRI=1 → MODO_AUTOMÁTICO (evento global).
+                     * BTN_X (×): BTN_X=1 → MODO_MANUAL (evento global).
+                     * BTN_O (○): BTN_O=1 → EMERGENCIA (evento global, prioridad máxima).
+                     * Joysticks analógicos: controlan velocidad (joystick izquierdo Y) y dirección (joystick derecho X) únicamente en MODO_MANUAL.
+                     2. Lecturas de sensores ultrasónicos
+                     * D_FRONT < 30 cm: → FRENADO.
+                     * 30 ≤ D_FRONT ≤ 60 cm: → PRECAUCIÓN.
+                     * D_FRONT > 60 cm: → MODO_AUTOMÁTICO.
+                     * D_LEFT / D_RIGHT (en FRENADO): max(D_LEFT,D_RIGHT) ≥ 40 cm → ESQUIVANDO hacia el lado con mayor espacio.
+                     3. Temporizadores y timeouts
+                     * Timeout UART (~300–500 ms, según periodo de heartbeat): UART_OK=0 → EMERGENCIA (evento global, prioridad máxima).
+                     * Timer maniobra evasiva (~3 s): fin de ESQUIVANDO → REANUDANDO.
+                     * Timer reanudación (0,5 s): pausa tras ESQUIVANDO → verificación frontal antes de transitar a:
+                     * D_FRONT > 60 cm → MODO_AUTOMÁTICO
+                     * 30 ≤ D_FRONT ≤ 60 cm → PRECAUCIÓN
+                     * D_FRONT < 30 cm → FRENADO
+                     4. Prioridad de eventos
+Las transiciones obedecen a la siguiente jerarquía:
+                     * Eventos globales de emergencia: BTN_O=1 o UART_OK=0.
+                     * Comandos del usuario: BTN_X=1 o BTN_TRI=1.
+                     * Condiciones de navegación: lecturas de sensores ultrasónicos y temporizadores locales.
+5.6 Consideraciones de Diseño Basadas en Hojas de Datos
+En esta etapa, sin ensayos completos de hardware, el firmware se apoya en especificaciones de los componentes:
+
+
+HC-SR04 (sensor ultrasónico)
+
+
+                     * Ciclo de medición: rango 2–400 cm; precisión típica ~±3 mm; disparo con pulso TRIG ≥10 µs; entre mediciones esperar ≥60 ms para evitar ecos residuales. 
+                     * Nivel de señal ECHO: pulso digital a 5 V proporcional al tiempo de vuelo → se requiere adaptación de nivel a 3.3 V para los GPIO de la EDU-CIAA (divisor resistivo o buffer 5V→3V3). 
+                     * Implicación en firmware: usar Timer Capture para medir el ancho de ECHO en µs; disparar sensores en forma secuencial (stagger) para evitar diafonía; respetar ≥60 ms entre triggers de distintos módulos (100 ms en automático, 50 ms en precaución según la FSM).
+
+
+TB6612FNG (puente H, 2 canales)
+
+
+                     * Límites eléctricos: VM máx. 15 V; IOUT 1.2 A promedio / 3.2 A pico por canal; Rds_on típico 0.5 Ω (high+low @ VM≥5 V). 
+                     * PWM: acepta control de velocidad por PWM hasta ~100 kHz (margen amplio). Seleccionamos 20 kHz (ultrasónico, sin ruido audible y con buena linealidad del motor). 
+                     * Implicación en firmware (SCT/PWM): configurar PWM por hardware a 20 kHz; considerar dead-time si fuera necesario por layout/cableado; mantener STBY en alto para habilitar el driver.
+
+
+S3003 (servomotor)
+
+
+                     * Control: PWM por ancho de pulso con periodo 20 ms (50 Hz); punto neutro ~1.5 ms; recorrido típico alrededor de 1.0 – 2.0 ms (el ángulo efectivo no está garantizado como 0–180° y depende de fabricante/unidad). 
+                     * Alimentación: 4.8 – 6.0 V (corriente instantánea puede acercarse a ~1 A bajo carga). 
+                     * Implicación en firmware: generar PWM con periodo fijo de 20 ms y duty ajustable (≈5–10 %); calibrar extremos mecánicos en pruebas para no forzar el servo.
+
+
+ESP32-WROOM-32 (módulo de enlace/joystick)
+
+
+                     * UART: soporta baudios altos (hasta ~5 Mbps); operaremos a 115 200 bps por compatibilidad. 
+                     * Latencia BT clásica: del orden de decenas de ms en condiciones normales. (Se usa heartbeat por UART para supervisión, no el tráfico de datos del usuario.)
+                     * Implicación en firmware (timeout): UART_OK se evalúa con heartbeat periódico (p.ej., 100 ms) y timeout = 3×T (típicamente 300–500 ms) → si no llega paquete válido a tiempo, EMERGENCIA.
+
+
+LPC4337 (EDU-CIAA)
+
+
+                     * CPU y arquitectura: Cortex-M4/M0 hasta 204 MHz, memoria y periféricos suficientes para FreeRTOS y control en tiempo real. 
+                     * Temporizadores: SCTimer/PWM para generación de PWM (motores/servo) y TIMER/Capture para medición de ECHO. 
+                     * Implicación en firmware: arquitectura con tareas concurrentes (lectura ultrasónicos, control motores, control servo, comunicaciones) es viable con holgura.
+5.7 Próximos Pasos: Simulación y Pruebas
+Avances Realizados : 
+Pruebas de Sensores Ultrasónicos HC-SR04 
+ Se realizaron pruebas exitosas de los sensores ultrasónicos HC-SR04. Se implementó un sistema de prueba que permite:
+                     * Lectura simultánea de los tres sensores: Se validó que los sensores funcionan correctamente sin interferencias entre ellos.
+                     * Sistema de indicación visual progresivo: A medida que se acerca un objeto (por ejemplo, una mano), se encienden LEDs de forma gradual formando una "barra" que indica la proximidad:
+                     * Distancia < 40 cm: LED azul
+                     * Distancia < 30 cm: LED1
+                     * Distancia < 20 cm: LED verde + LED2 (desaparece azul)
+                     * Distancia < 10 cm: LED rojo + verde + LED3
+                     * Distancia < 5 cm: Alerta roja parpadeante con todos los LEDs
+
+
+El sistema detecta automáticamente el objeto más cercano entre los tres sensores y ajusta la indicación visual en consecuencia. Las pruebas demostraron una respuesta inmediata y confiable ante la aproximación de obstáculos.
+Estas pruebas de sensores se documentarán con fotografías y video demostrativo en la sección 9.Anexos 
+
+
+Pruebas del Servomotor S3003 (Sistema de Dirección)
+Se realizaron pruebas exitosas del servomotor S3003 que controlará la dirección del vehículo. Se implementaron y validaron dos métodos de control PWM:
+                     * PWM por Software:
+                     * Se logró control preciso del servomotor mediante generación de pulsos PWM por software usando el pin T_COL2
+                     * Rango de operación validado: 0° a 180° con pulsos de 1.0 ms a 2.0 ms a 50 Hz
+                     * Se verificaron movimientos suaves mediante barridos progresivos
+                     * Observación: Se detectó un ligero retardo en la respuesta del servo comparado con PWM por hardware, debido al overhead del procesamiento por software
+                     * PWM por Hardware:
+                     * Se logró configurar exitosamente el módulo PWM por hardware de la EDU-CIAA definiendo las macros BOARD=edu_ciaa_nxp y PWM_TOTALS=10
+                     * El servomotor respondió de forma más rápida y precisa con esta implementación
+                     * Se validó la generación correcta de señales PWM a 50 Hz con duty cycle variable entre 5% (0°) y 10% (180°)
+                     * Ventaja confirmada: Menor latencia en los cambios de posición y mayor estabilidad en el control
+
+
+Conclusión de pruebas del servo: El sistema de dirección está validado y operativo. Se recomienda utilizar PWM por hardware en la implementación final para obtener respuestas más rápidas y liberar recursos de CPU para otras tareas del sistema.
+Las pruebas del servomotor se documentarán con fotografías y video demostrativo en la sección 9. Anexos.
+
+
+Pruebas del Sistema de Tracción (Puente H TB6612FNG + Motores DC TT)
+Se realizaron pruebas exitosas del sistema de tracción completo, validando la integración del puente H TB6612FNG con los dos motores DC TT. Las pruebas confirmaron:
+                     * Control bidireccional de motores: Se verificó el correcto funcionamiento del control de dirección mediante las señales AIN1/AIN2 (Motor A) y BIN1/BIN2 (Motor B), logrando movimientos hacia adelante y retroceso en ambos motores.
+                     * Control de velocidad mediante PWM por software: Se implementó exitosamente un sistema de modulación por ancho de pulso (PWM) por software en los pines PWMA (T_COL0) y PWMB (T_COL1), operando a aproximadamente 25 kHz mediante una interrupción con retardo de 40 μs.
+                     * Validación de velocidades variables: Se comprobó el funcionamiento con valores de PWM ajustables (0-255), validando específicamente operación a 78% de velocidad (speedA = speedB = 200), demostrando control preciso y proporcional de la tracción.
+                     * Activación correcta del puente H: Se verificó que el pin STBY (GPIO5) habilita correctamente ambos canales del TB6612FNG, permitiendo el funcionamiento simultáneo de los dos motores.
+                     * Estabilidad del sistema: Los motores mostraron respuesta estable y consistente durante las pruebas prolongadas, sin sobrecalentamiento del puente H ni caídas de tensión significativas.
+Observaciones técnicas:
+                     * La frecuencia PWM de ~25 kHz se encuentra dentro del rango sónico (no audible), evitando ruido molesto durante la operación.
+                     * El uso de PWM por software en los pines de tracción es funcional y permite flexibilidad en el ajuste de velocidades sin requerir configuración adicional de periféricos hardware.
+                     * La configuración GPIO de todos los pines de control simplifica la implementación y facilita el debugging durante el desarrollo.
+
+
+Conclusión de pruebas del sistema de tracción: El subsistema de motores y puente H está completamente validado y operativo. El control de velocidad y dirección responde correctamente a los comandos programados, cumpliendo con los requerimientos establecidos para el movimiento del vehículo.
+
+
+Las pruebas del sistema de tracción se documentarán con fotografías y video demostrativo en la sección 9. Anexos.
+
+
+
+
+Actividades Pendientes
+Para completar las validaciones del sistema, quedan pendientes las siguientes tareas:
+
+
+Pruebas de drivers faltantes:
+                     * Comprobar la comunicación UART entre la EDU-CIAA y el ESP32
+                     * Integrar el control del joystick PS3/PS4 vía Bluetooth
+
+
+Pruebas de integración del sistema:
+                     * Integrar el sistema de tracción validado (motores + puente H) con el sistema de dirección (servomotor S3003)
+                     * Verificar las transiciones entre estados de la máquina de estados (automático/manual)
+                     * Validar la respuesta completa del sistema: sensores → decisión → actuación en motores
+                     * Comprobar el frenado progresivo y la detención automática ante obstáculos
+                     * Sincronizar el control diferencial de velocidad entre ambos motores para maniobras de evasión
+
+
+Pruebas del sistema completo:
+                     * Ensayar la navegación autónoma en un circuito de prueba básico
+                     * Medir tiempos de respuesta desde detección hasta acción
+                     * Verificar autonomía energética con la batería seleccionada
+                     * Validar el comportamiento del sistema completo montado en el chasis con carga mecánica real
+
+
+Estas actividades pendientes se realizarán durante las próximas semanas y se documentarán en entregas posteriores.
+5.8 Versión Final del Software: Arquitectura, Modularización y Algoritmos Implementados[i]
+5.8.1 Arquitectura Final Implementada
+                     * Descripción de la estructura FreeRTOS definitiva
+                     * Configuración final de tareas y sus prioridades
+                     * Sistema de comunicación entre tareas (colas, semáforos, mutex)
+                     * Gestión de recursos compartidos
+5.8.2 Modularización Final del Código
+                     * Estructura de archivos y carpetas del proyecto
+                     * Organización de drivers (HAL)
+                     * Organización de la capa de aplicación
+                     * Interfaces entre módulos
+                     * Bibliotecas utilizadas y sus versiones
+5.8.3 Algoritmos Implementados
+                     * Algoritmo de lectura de sensores ultrasónicos
+                     * Algoritmo de control de motores y servo
+                     * Algoritmo de evasión de obstáculos
+                     * Algoritmo de suavizado de aceleración (rampa PWM)
+                     * Lógica de la máquina de estados final
+                     * Protocolo de comunicación UART con ESP32
+                     * Sistema de detección y recuperación de errores
+5.8.4 Optimizaciones Realizadas
+                     * Ajustes de timing y frecuencias
+                     * Optimizaciones de memoria
+                     * Mejoras en tiempo de respuesta
+                     * Soluciones a problemas encontrados durante la implementación
+6. Ensayos y Mediciones[j]
+6.1 Pruebas Realizadas con el PCB Fabricado
+6.1.1 Verificación Eléctrica del PCB
+Previo a las pruebas funcionales, se realizó una inspección exhaustiva del PCB fabricado. Se verificó la continuidad de todas las pistas mediante multímetro, confirmando que no existían cortocircuitos entre las líneas de alimentación (+5V) y tierra (GND). Se comprobó el correcto dimensionamiento de los pads y la calidad de las soldaduras realizadas. La máscara antisoldante y la serigrafía se fabricaron correctamente, facilitando la identificación de componentes y puntos de conexión.
+El proceso de fabricación del PCB no presentó inconvenientes significativos. Las pistas de 1 mm de ancho se revelaron correctamente, los taladros de 0.7 mm para los pines quedaron bien centrados, y los orificios de montaje M3 en las esquinas permitieron una fijación segura al chasis. El plano de tierra en la capa BOTTOM se implementó exitosamente, cubriendo aproximadamente el 70% del área como se había diseñado.
+
+
+6.1.2 Pruebas de Sensores Ultrasónicos HC-SR04 con PCB
+Se realizaron pruebas de los tres sensores ultrasónicos HC-SR04 montados en el PCB. Los divisores resistivos (10kΩ/20kΩ) integrados en la placa funcionaron correctamente, adaptando las señales ECHO de 5V a 3.3V de manera segura para las entradas de la EDU-CIAA.
+
+
+Durante las primeras pruebas no se detectaron lecturas de los sensores. Sin embargo, tras un análisis exhaustivo, se determinó que el problema no estaba relacionado con el diseño del PCB, sino con aspectos del firmware. Específicamente:
+                     * Problema crítico con la función delayUs(): La función de retardo en microsegundos delayUs() no generaba los tiempos esperados, lo que impedía el correcto disparo de los sensores ultrasónicos. El pulso TRIG de 10 μs requerido no se estaba produciendo con la duración adecuada.
+                     * Solución implementada: Se reemplazó la función delayUs() por delayInaccurate(), que aunque menos precisa en términos absolutos, generó retardos funcionales que permitieron el correcto disparo de los sensores HC-SR04.
+Una vez realizados los ajustes correspondientes en el software, los tres sensores funcionaron correctamente, proporcionando mediciones estables y confiables. Las conexiones eléctricas del PCB demostraron ser robustas, sin ruido apreciable en las señales ECHO ni interferencias entre canales.
+Conexiones validadas:
+                     * TRIG #1, #2, #3: señales de disparo limpias y estables
+                     * ECHO #1, #2, #3: pulsos correctamente adaptados a 3.3V mediante divisores resistivos
+                     * Alimentación +5V: voltaje estable en los tres sensores
+                     * GND común: sin diferencias de potencial entre módulos
+
+
+Ver Anexo 9.4.1 para videos demostrativos del funcionamiento de los sensores con el PCB
+
+
+6.1.3 Pruebas del Sistema de Tracción (Puente H + Motores) con PCB
+El sistema de tracción, compuesto por el puente H TB6612FNG y los dos motores DC TT, funcionó correctamente desde la primera prueba con el PCB. Todas las conexiones diseñadas operaron según lo esperado:
+
+
+Señales de control validadas:
+                     * PWMA (TCOL0) y PWMB (TCOL1): generación PWM limpia a ~25 kHz
+                     * AIN1, AIN2, BIN1, BIN2: control de dirección preciso y sin falsos disparos
+                     * STBY (GPIO4): habilitación correcta del puente H
+
+
+Alimentación:
+                     * VM (+5V): voltaje estable incluso con ambos motores en operación
+                     * VCC (3.3V): alimentación lógica del TB6612FNG sin caídas de tensión
+                     * Las pistas de 1 mm de ancho manejaron sin problemas las corrientes de los motores (hasta 1.2A por canal)
+
+
+Resultados de las pruebas:
+                     * Control bidireccional: ambos motores respondieron correctamente a comandos de avance y retroceso
+                     * Control de velocidad variable: PWM entre 0-255 proporcionó control suave y proporcional
+                     * Operación simultánea: sin interferencias entre canales A y B
+                     * Disipación térmica: el TB6612FNG operó a temperatura normal sin necesidad de disipador adicional
+
+
+No se presentaron problemas relacionados con el diseño del PCB. Las pistas de alimentación, las conexiones de señales de control y la distribución del plano de tierra funcionaron exactamente como se había planificado.
+Ver Anexo 9.4.1 para videos demostrativos del sistema de tracción operando con el PCB
+
+
+6.1.4 Pruebas del Servomotor S3003 con PCB
+El servomotor S3003 conectado al PCB funcionó perfectamente desde las primeras pruebas. La señal PWM generada por el pin TCOL2 resultó completamente estable y precisa:
+Características validadas:
+                     * Frecuencia: 50 Hz (periodo de 20 ms) - perfectamente estable
+                     * Ancho de pulso: rango de 1.0 ms a 2.0 ms para control de ángulo 0° a 180°
+                     * Estabilidad: sin jitter apreciable en la posición del servo
+                     * Alimentación: +5V estable, sin caídas de tensión durante movimientos bruscos
+
+
+Pruebas realizadas:
+                     * Barridos completos de 0° a 180°: respuesta suave y precisa
+                     * Posiciones intermedias: repetibilidad excelente
+                     * Movimientos rápidos: sin pérdida de sincronismo ni falsos disparos
+                     * Operación bajo carga: el servo mantuvo su posición incluso al aplicar fuerza externa sobre el eje
+
+
+La conexión del servo al PCB mediante el conector de 3 pines (señal, +5V, GND) resultó completamente confiable. No se detectaron problemas en el diseño ni en la implementación del circuito de control del servo.
+
+
+Ver Anexo 9.4.1 para videos demostrativos del servomotor operando con el PCB
+
+
+6.2 Conclusión General de las Pruebas con PCB
+El diseño del PCB fue exitoso. Todas las conexiones, pistas de alimentación, divisores resistivos, y distribución del plano de tierra funcionaron según lo especificado. La decisión de utilizar pistas de 1 mm de ancho uniforme demostró ser acertada, proporcionando capacidad de corriente más que suficiente y simplificando el proceso de diseño y fabricación.
+
+
+Los únicos problemas detectados durante las pruebas fueron de naturaleza software, específicamente en el algoritmo de lectura y filtrado de los sensores ultrasónicos. Una vez corregidos estos aspectos en el firmware, el sistema completo operó de manera estable y confiable.
+
+
+No se requirieron modificaciones al PCB (puentes, cortes de pistas, o componentes adicionales), lo cual valida la calidad del diseño esquemático y del layout realizado. El PCB fabricado cumplió completamente con su función de integrar todos los subsistemas del vehículo semiautónomo.
+
+
+6.3 Dificultades Encontradas y Soluciones Aplicadas
+6.3.1 Problemas en la Construcción del PCB
+No se presentaron problemas significativos durante la construcción del PCB. El proceso de fabricación en el laboratorio de la facultad se completó sin inconvenientes:
+                     * Las pistas se revelaron correctamente
+                     * Los taladros quedaron bien centrados en los pads
+                     * No se detectaron cortocircuitos ni pistas interrumpidas
+                     * La soldadura de componentes se realizó sin dificultades
+
+
+6.3.2 Problemas en el Desarrollo del Firmware sobre EDU-CIAA[k]
+Como se mencionó anteriormente, los únicos problemas encontrados fueron de software, específicamente:
+
+
+Problema: Ausencia de lecturas de los sensores ultrasónicos
+                     * Causa: La función delayUs() utilizada inicialmente no generaba los retardos en microsegundos de forma correcta, impidiendo que el pulso TRIG de 10 μs necesario para disparar los sensores HC-SR04 tuviera la duración adecuada. Esto resultaba en que los sensores no se activaban y por lo tanto no se obtenían lecturas.
+                     * Solución: Se reemplazó la función delayUs() por delayInaccurate(), que aunque menos precisa en términos de exactitud temporal, generó retardos funcionales suficientes para producir el pulso TRIG correctamente y permitir el disparo de los sensores.
+
+
+Tras los ajustes en el firmware, los sensores proporcionaron mediciones estables y confiables, demostrando que el hardware del PCB estaba correctamente diseñado e implementado.
+7. Conclusiones[l]
+7.1 Cumplimiento de Objetivos
+7.1.1 Objetivos Primarios (Conducción Asistida)
+                     * Evaluación del cumplimiento de cada objetivo primario planteado en la sección 2.1
+                     * Grado de cumplimiento alcanzado
+                     * Objetivos no cumplidos y razones
+7.1.2 Objetivos Secundarios (Autonomía Avanzada)
+                     * Estado de los objetivos secundarios planteados en la sección 2.2
+                     * Qué se logró implementar
+                     * Qué quedó como trabajo futuro
+7.2 Evaluación de Requerimientos
+7.2.1 Requerimientos de Hardware
+                     * Análisis del cumplimiento de cada requerimiento (sección 3.1)
+                     * Cambios o modificaciones realizadas
+                     * Justificación de desviaciones
+7.2.2 Requerimientos de Software
+                     * Análisis del cumplimiento de cada requerimiento (sección 3.2)
+                     * Funcionalidades implementadas vs planificadas
+                     * Cambios en la arquitectura durante el desarrollo
+7.2.3 Requerimientos No Funcionales
+                     * Evaluación de cumplimiento (sección 3.3)
+                     * Desempeño del sistema vs especificaciones
+                     * Problemas o cambios surgidos
+7.3 División de Tareas y Horas de Ingeniería
+7.3.1 Actividades de Alexis
+                     * Descripción detallada de tareas realizadas
+                     * Horas invertidas por fase del proyecto
+                     * Total de horas: [X horas]
+7.3.2 Actividades de Ezequiel
+                     * Descripción detallada de tareas realizadas
+                     * Horas invertidas por fase del proyecto
+                     * Total de horas: [X horas]
+7.3.3 Actividades de Facundo
+                     * Descripción detallada de tareas realizadas
+                     * Horas invertidas por fase del proyecto
+                     * Total de horas: [X horas]
+7.3.4 Actividades de Lautaro
+                     * Descripción detallada de tareas realizadas
+                     * Horas invertidas por fase del proyecto
+                     * Total de horas: [X horas]
+7.3.5 Cálculo Total de Horas de Ingeniería
+                     * Suma de horas por integrante
+                     * Distribución de horas por fase
+                     * Total de horas-ingeniero del proyecto: [X horas]
+7.4 Experiencia del Grupo en la Materia
+7.4.1 Aprendizajes Técnicos
+                     * Conocimientos adquiridos en hardware
+                     * Conocimientos adquiridos en software
+                     * Herramientas y metodologías aprendidas
+7.4.2 Trabajo en Equipo
+                     * Dinámica del grupo
+                     * Metodología de trabajo utilizada
+                     * Coordinación y comunicación
+7.4.3 Desafíos y Logros
+                     * Principales desafíos enfrentados
+                     * Logros destacados del proyecto
+                     * Aspectos a mejorar en futuros proyectos
+7.4.4 Valoración de la Experiencia
+                     * Opinión general sobre Taller de Proyecto I
+                     * Aplicabilidad de lo aprendido
+                     * Sugerencias para la materia
+
+
+8. Bibliografía
+[1] Grupo de Taller de Proyecto I. "Sistema de Control de Auto a Través de Bluetooth". Universidad Nacional de La Plata, Facultad de Ingeniería, 2024. Disponible: https://docs.google.com/document/d/1ua-hBV9kZBrbMqRwfMvlApqIyZP-95cdcSna2z9olZY/edit?usp=sharing  .
+[2] "Cómo hacer un ROBOT ESQUIVA OBSTÁCULOS con ARDUINO | TUTORIAL FÁCIL PARA PRINCIPIANTES" [video en línea]. YouTube. Disponible: https://www.youtube.com/watch?v=oO6KM7aFZto.
+[3] EDU-CIAA-NXP. Esquemático v2 y Manual de la Placa EDU-CIAA-NXP v1.1 Board – 2019-01-03 v5r0. Provisto por la Cátedra. Disponible:
+                     * https://www.asignaturas.ing.unlp.edu.ar/pluginfile.php/386011/mod_resource/content/2/EDU-CIAA-NXP%20Esquematico_v2.pdf
+
+                     * https://www.asignaturas.ing.unlp.edu.ar/pluginfile.php/386010/mod_resource/content/1/EDU-CIAA-NXP%20v1.1%20Board%20-%202019-01-03%20v5r0.pdf
+
+[4] Sensores Ultrasónicos HC-SR04. Datasheets Técnicos. Disponible:
+                        * https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf
+
+                        * https://www.handsontec.com/dataspecs/HC-SR04-Ultrasonic.pdf
+
+[5] Motores DC TT. Datasheets y especificaciones técnicas. Disponible:
+                           * Adafruit TT Motor: https://media.digikey.com/pdf/Data%20Sheets/Adafruit%20PDFs/3777_Web.pdf
+
+                           * Kiwi Electronics TT Motor: https://www.kiwi-electronics.com/en/dc-gearbox-motor-tt-motor-200rpm-3-6vdc-10318
+
+                           * DFRobot TT Motor: https://www.dfrobot.com/product-1457.html
+
+[6] Módulo Puente H TB6612FNG. Datasheet y guía de conexión. Disponible:
+                              * https://dfimg.dfrobot.com/nobody/wiki/1d92d52bf6341a9f4a90a2adfead38f0.pdf
+
+                              * https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/925/TB6612FNG_Hookup_Guide_Web.pdf
+
+[7] Servo Motor Futaba S3003. Datasheets Técnicos. Disponible:
+                                 * https://www.kjell.com/globalassets/mediaassets/701905_87902_datasheet_en.pdf
+
+                                 * https://futabausa.com/wp-content/uploads/2019/07/S3003.pdf
+
+[8] ESP32-WROOM-32. Datasheets y documentación técnica. Espressif Systems. Disponible:
+                                    * https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf
+
+                                    * https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+
+                                    * BluePad32 Library Documentation: https://bluepad32.readthedocs.io/
+
+
+9.Anexo
+9.1 Lista de Materiales
+
+
+Componente
+	Cantidad
+	Descripción
+	EDU-CIAA-NXP
+	1
+	Placa de desarrollo con LPC4337
+	ESP32-WROOM-32
+	1
+	Módulo WiFi/Bluetooth
+	HC-SR04
+	3
+	Sensor ultrasónico de distancia
+	TB6612FNG
+	1
+	Módulo driver puente H dual
+	Motor DC TT 6V
+	2
+	Motor con caja reductora 1:48
+	Servo S3003
+	1
+	Servomotor estándar 180°
+	Power Bank Xiaomi PB100DZM
+	1
+	Batería 10000mAh, salidas USB 5V/3A
+	Chasis 4WD Rover
+	1
+	Kit completo con ruedas y estructura
+	Control PS3/PS4
+	1
+	Joystick inalámbrico
+	Resistencias 10kΩ
+	3
+	Para divisor resistivo sensores
+	Resistencias 20kΩ
+	3
+	Para divisor resistivo sensores
+	Cables Dupont
+	50
+	Cables macho-macho, macho-hembra
+	Cable USB Tipo-C
+	2
+	Para alimentación y carga
+	PCB personalizado
+	1
+	Placa para integración de componentes
+	Tornillería y soportes
+	-
+	Tornillos M3, espaciadores, tuercas
+	Estaño y flux
+	-
+	Materiales de soldadura
+	
+
+9.2 Documentación gráfica y videos demostrativos 
+                                       * El diagrama único de la máquina de estados ya fue presentado en la sección 5.5, y se adjunta además en PDF para mejor visualización: Ver diagrama de estados.
+
+                                       * El circuito esquemático fue presentado en la sección 4.5 y también se encuentra disponible en PDF: ver diagrama esquematico
+                                       * Diseño del PCB:  Diseño completo realizado para la integración de todos los componentes del sistema. Incluye ruteo de pistas, ubicación de conectores y distribución de alimentación. El diseño está preparado para fabricación y se adjuntan imágenes de ambas capas en formato PDF:
+ver capa top
+ver capa botom
+Vista 3D del PCB:
+Se adjunta la vista tridimensional generada por KiCAD que muestra la disposición final de todos los componentes, la orientación de los conectores para facilitar el cableado y la ubicación de los orificios de montaje. Esta visualización permitió detectar y corregir posibles problemas antes de la fabricación: 
+ver vista 3D del PCB
+
+
+                                          * Video demostrativo - Pruebas de sensores con protoboard:
+Se presenta la documentación visual del funcionamiento de los tres sensores ultrasónicos HC-SR04, conectados a la EDU-CIAA a través de una protoboard. El sistema implementa una indicación LED progresiva tipo barra, donde el encendido de los LEDs varía según la distancia medida por los sensores.
+La imagen siguiente muestra el montaje físico del circuito de prueba, basado en el diseño esquemático propuesto. En él se observan los tres sensores HC-SR04 conectados a la EDU-CIAA mediante la protoboard, junto con el cableado correspondiente a las señales Trig y Echo, y la alimentación de 5V.
+  
+
+Durante las pruebas se verificó la detección simultánea y la respuesta en tiempo real ante la aproximación de obstáculos, confirmando el correcto funcionamiento del sistema de medición y la correspondencia entre la distancia detectada y la visualización en los LEDs. ver video
+
+
+Video demostrativo - Pruebas del servomotor S3003 con protoboard:
+Se adjunta la documentación visual de las pruebas realizadas al servomotor S3003, que controlará el sistema de dirección del vehículo. En el video se demuestra:
+                                          * Control mediante PWM por software utilizando el pin T_COL2: se muestra la generación de pulsos PWM implementada por software, con generación manual de los tiempos de pulso a 50 Hz
+                                          * Control mediante PWM por hardware con configuración de macros del sistema (BOARD=edu_ciaa_nxp y PWM_TOTALS=10): se presenta la implementación usando el módulo PWM por hardware de la EDU-CIAA
+                                          * Validación del rango completo de movimiento (0° a 180°) con pulsos de 1.0 ms a 2.0 ms
+                                          * Barridos progresivos que muestran la respuesta del servo en ambos modos de control
+                                          * Comparación directa entre ambos métodos: se evidencia la diferencia en tiempo de respuesta, con el método por hardware mostrando menor latencia y transiciones más suaves, mientras que el método por software presenta un ligero retardo debido al overhead del procesamiento
+
+
+Las pruebas confirmaron la operatividad del sistema de dirección en ambas implementaciones. La comparación demostró la ventaja del PWM por hardware en términos de latencia reducida, mayor estabilidad en la señal y liberación de recursos de CPU, razón por la cual se recomienda utilizar este método en la implementación final del sistema: 
+ver video de servo por hardware
+ver video del servo por software
+
+
+Video demostrativo - Pruebas del sistema de tracción (Puente H TB6612FNG + Motores DC TT) con protoboard: 
+Se presenta la documentación visual de las pruebas del sistema de tracción completo, validando la integración del puente H TB6612FNG con los dos motores DC TT. En el video se demuestra:
+                                          * Control bidireccional de los motores mediante las señales AIN1/AIN2 (Motor A) y BIN1/BIN2 (Motor B), mostrando movimientos hacia adelante y retroceso
+                                          * Control de velocidad mediante PWM por software operando a aproximadamente 25 kHz (frecuencia ultrasónica, no audible)
+                                          * Funcionamiento con valores de PWM ajustables (0-255), específicamente validando operación a 78% de velocidad (speedA = speedB = 200)
+                                          * Activación correcta del puente H mediante el pin STBY (GPIO5), habilitando ambos canales del TB6612FNG
+                                          * Respuesta estable y consistente de ambos motores funcionando simultáneamente sin sobrecalentamiento del driver
+Las pruebas confirmaron el correcto funcionamiento del subsistema de tracción. Los motores mostraron control preciso y proporcional de velocidad, respuesta inmediata a los cambios de dirección, y operación estable durante períodos prolongados. El sistema está completamente validado y listo para su integración con el resto de los subsistemas del vehículo (sensores y dirección): ver video de puente mas dos motores
+
+
+Video demostrativo - Pruebas de sensores ultrasónicos HC-SR04 con PCB:[m][n]
+Se presenta la documentación visual del funcionamiento de los tres sensores ultrasónicos HC-SR04 montados directamente en el PCB fabricado. El video demuestra:
+                                          * Correcta adaptación de niveles lógicos mediante los divisores resistivos (10kΩ/20kΩ) integrados en el PCB
+                                          * Lectura simultánea de los tres sensores sin interferencias entre canales
+                                          * Sistema de indicación LED progresiva tipo "barra" implementado, donde el encendido de los LEDs varía según la distancia medida
+                                          * Respuesta en tiempo real ante la aproximación de obstáculos
+                                          * Validación del funcionamiento tras los ajustes de firmware (reemplazo de delayUs() por delayInaccurate())
+
+
+Las pruebas confirmaron que el diseño del PCB para el subsistema de sensores fue exitoso. Los divisores resistivos, las conexiones de alimentación y las pistas de señal funcionaron exactamente como se había planificado. El problema inicial de ausencia de lecturas fue resuelto completamente mediante correcciones en el firmware, sin necesidad de modificar el hardware.
+
+
+Ver video:video de sensores con pcb
+
+
+Video demostrativo - Pruebas del servomotor S3003 con PCB:
+
+
+Se adjunta la documentación visual de las pruebas realizadas al servomotor S3003 conectado al PCB fabricado. En el video se demuestra:
+                                          * Generación de señal PWM estable a 50 Hz desde el pin TCOL2 del PCB
+                                          * Control preciso del ángulo de dirección en el rango completo (0° a 180°)
+                                          * Barridos progresivos mostrando respuesta suave y sin jitter
+                                          * Movimientos rápidos sin pérdida de sincronismo
+                                          * Alimentación estable de +5V desde el PCB sin caídas de tensión durante operación
+
+
+Las pruebas confirmaron que las conexiones del servo en el PCB (señal PWM, +5V, GND) funcionaron perfectamente desde la primera prueba. No se detectaron problemas en el diseño ni en la implementación del circuito de control del servo. La señal PWM generada fue completamente estable y precisa, permitiendo un control exacto del sistema de dirección.
+
+
+Ver video: servo andando con el pcb
+
+
+
+
+
+
+Video demostrativo - Pruebas del sistema de tracción (Puente H TB6612FNG + Motores DC TT) con PCB:
+
+
+Se presenta la documentación visual de las pruebas del sistema de tracción completo montado en el PCB fabricado, validando la integración del puente H TB6612FNG con los dos motores DC TT. En el video se demuestra:
+                                          * Control bidireccional correcto mediante las señales AIN1/AIN2 (Motor A) y BIN1/BIN2 (Motor B)
+                                          * Control de velocidad variable mediante PWM (valores ajustables de 0-255)
+                                          * Activación correcta del puente H mediante el pin STBY (GPIO4)
+                                          * Las pistas de 1 mm de ancho manejando sin problemas las corrientes de los motores (hasta 1.2A por canal)
+                                          * Operación simultánea de ambos motores sin interferencias
+                                          * Disipación térmica adecuada del TB6612FNG sin necesidad de disipador adicional
+                                          * Alimentación estable desde el PCB sin caídas de tensión apreciables
+
+
+Las pruebas confirmaron el correcto funcionamiento del subsistema de tracción integrado en el PCB. Todas las conexiones diseñadas (señales de control, alimentación VM y VCC, plano de tierra) operaron según lo especificado. No se requirieron modificaciones ni ajustes al diseño del PCB. El sistema de tracción está completamente validado y listo para operación.
+
+
+Ver video: ver puente TB6612FNG con pcb
+
+
+
+
+[a]si se llega a modificar la alimentacion
+[b]si se llega a modificar la fuente de alimentación
+[c]si se llega a modificar la fuente de alimentación
+[d]si se llega a modificar la fuente de alimentación
+[e]lo que se agrego  con respecto la fuente de alimentación  y se cambiaria si es otra forma de alimentarlo
+[f]lo que se agrega segun  lo que piden en la plantilla
+[g]se cambiaria si cambia la forma de alimentar el sistema
+[h]se cambiaria si cambia la forma de alimentar el sistema
+[i]por agregar hasta que tengamos todo el sistema andando
+[j]nueva seccion agregada  segun la plantilla del informe final
+[k]falta agregar la prueba con el sistema completo funcionando
+[l]como una guia para completar
+[m]agregado recien
+[n]las pruebas individuales de los componentes

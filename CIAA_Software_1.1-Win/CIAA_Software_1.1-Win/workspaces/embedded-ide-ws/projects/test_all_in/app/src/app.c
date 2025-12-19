@@ -140,6 +140,9 @@ struct ControlPacket {
     uint8_t footer;    
 } __attribute__((packed));
 
+// --- VARIABLES COMPARTIDAS DE SEGURIDAD ---
+volatile TickType_t lastValidTime = 0;
+
 struct FeedbackPacket {
     uint8_t header;    // 0x5B
     uint8_t command;   
@@ -484,6 +487,7 @@ void TaskUARTDecode(void* taskParm) {
     static uint8_t state = 0; // 0:WAIT_HEADER, 1:READ_DATA
     static uint8_t rawBuf[8]; // sizeof(ControlPacket)
     static uint8_t idx = 0;
+    // static TickType_t lastValidTime = 0; // Ahora es global para TaskMotors
 
     while(1) {
         // Esperar notificacion de datos
@@ -497,7 +501,16 @@ void TaskUARTDecode(void* taskParm) {
             uint8_t byte = rxBuffer[rxTail];
             rxTail = (rxTail + 1) % RX_BUFFER_SIZE;
             
-            // MAQUINA DE ESTADOS BINARIA
+            // --- SAFETY FIX: TIME-BASED RESET ---
+            // Si pasaron mas de 200ms sin un paquete VALIDO (Checksum OK),
+            // asumimos perdida de control (ruido o desconexion) y frenamos.
+            if ( (xTaskGetTickCount() - lastValidTime) > (200 / portTICK_RATE_MS) ) {
+                global_joy_x = 0; 
+                global_joy_y = 0; 
+                global_throttle = 0; 
+                global_brake = 0;
+            }
+
             switch (state) {
                 case 0: // WAIT HEADER
                     if (byte == BIN_HEADER) {
@@ -534,17 +547,31 @@ void TaskUARTDecode(void* taskParm) {
                                 
                                 // Botones
                                 uint8_t btns = pkt->buttons;
-                                // Detectar cambio de Modo (Triangulo)
-                                static uint8_t lastTriangle = 0;
-                                uint8_t currTriangle = (btns & 0x08) ? 1 : 0; // Bit 3 es Triangulo en ESP32
-                                
-                                if (currTriangle && !lastTriangle) {
-                                    // Cambiar Modo Ciclico
-                                    if(currentMode == MODE_MANUAL) currentMode = MODE_SAFETY_STOP;
-                                    else if(currentMode == MODE_SAFETY_STOP) currentMode = MODE_AVOIDANCE;
-                                    else currentMode = MODE_MANUAL;
+
+                                // --- PANIC BUTTON (Circulo - Bit 1) ---
+                                // Si se presiona Circulo, RESET TOTAL a Manual y Freno
+                                if (btns & 0x02) { 
+                                    currentMode = MODE_MANUAL;
+                                    global_throttle = 0;
+                                    global_brake = 0;
+                                    global_joy_x = 0;
+                                    global_joy_y = 0;
+                                    // Feedback visual/haptico de reset
+                                    sendFeedback(FB_CMD_RUMBLE, 50, 255, 255); // Vibracion fuerte
+                                } 
+                                else {
+                                    // Detectar cambio de Modo (Triangulo - Bit 3)
+                                    static uint8_t lastTriangle = 0;
+                                    uint8_t currTriangle = (btns & 0x08) ? 1 : 0; 
+                                    
+                                    if (currTriangle && !lastTriangle) {
+                                        // Cambiar Modo Ciclico
+                                        if(currentMode == MODE_MANUAL) currentMode = MODE_SAFETY_STOP;
+                                        else if(currentMode == MODE_SAFETY_STOP) currentMode = MODE_AVOIDANCE;
+                                        else currentMode = MODE_MANUAL;
+                                    }
+                                    lastTriangle = currTriangle;
                                 }
-                                lastTriangle = currTriangle;
                                 
                             } else {
                                 // Checksum Fail
@@ -582,6 +609,15 @@ void TaskMotors(void* taskParm) {
     static int16_t current_pwm_signed = 0;
 
     while(1) {
+        // --- DEAD MAN SWITCH (Redundancia) ---
+        // Si TaskUARTDecode muere o se cuelga, lastValidTime deja de actualizarse.
+        // TaskMotors detecta esto y corta la energia por si acaso.
+        if (lastValidTime != 0 && (xTaskGetTickCount() - lastValidTime) > (300 / portTICK_RATE_MS)) {
+             // Forzar corte de energia
+             global_throttle = 0;
+             global_brake = 0;
+        }
+
         // --- CALCULO OBJETIVO ---
         uint16_t thr = global_throttle;
         uint16_t brk = global_brake;
